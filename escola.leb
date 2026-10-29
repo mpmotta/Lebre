@@ -1,0 +1,58 @@
+// 1. Data em tempo real (S = Dia da semana)
+var data #hoje("dd/mm/yyyy - S");
+mostrar("======================================");
+mostrar("SISTEMA ESCOLAR LEBRE - " + #hoje);
+mostrar("======================================");
+
+// 2. Entrada de dados via console
+mostrar("Digite o nome do aluno:");
+var texto #aluno = carregar();
+
+// 3. Criando uma lista a partir da divisão de um texto
+var texto #textoGrade = "Matematica,Fisica,Programacao";
+var lista #disciplinas = dividir(#textoGrade, ",");
+
+// 4. Manipulando a lista dinamicamente (inserindo novo item)
+adicionar(#disciplinas, "Banco de Dados");
+
+// 5. Laço foreach (linhas) para percorrer a lista
+mostrar("---");
+mostrar("Disciplinas matriculadas:");
+linhas (var texto #disc : #disciplinas) {
+    mostrar("- " + #disc);
+}
+
+// 6. Funções nativas estatísticas
+var decimal #nota1 = 8.5;
+var decimal #nota2 = 6.0;
+var decimal #nota3 = 9.2;
+var decimal #mediaFinal = media(#nota1, #nota2, #nota3);
+
+// 7. Função customizada de usuário com controle de fluxo
+funcao #avaliarAluno(decimal #notaCalculada) {
+    cons decimal #MEDIA_APROVACAO = 7.0;
+    
+    se (#notaCalculada >= #MEDIA_APROVACAO) {
+        retorna "APROVADO";
+    } senao se (#notaCalculada >= 5.0) {
+        retorna "EM RECUPERACAO";
+    } senao {
+        retorna "REPROVADO";
+    }
+}
+
+// 8. Invocando a função e capturando o retorno
+var texto #statusFinal = #avaliarAluno(#mediaFinal);
+
+// 9. Concatenação de variáveis para exibição
+mostrar("---");
+mostrar("Resumo do Aluno: " + #aluno);
+mostrar("Media Final: " + #mediaFinal);
+mostrar("Status: " + #statusFinal);
+
+// 10. Laço for clássico (linha) e operador de decremento
+mostrar("---");
+linha (var int #i = 3; #i > 0; #i--) {
+    mostrar("Encerrando o sistema em " + #i + "...");
+}
+mostrar("Sistema encerrado!");

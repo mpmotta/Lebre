@@ -1,0 +1,58 @@
+cons decimal #MEDIA_APROVACAO! = 7.0;
+cons decimal #MEDIA_RECUPERACAO! = 5.0;
+
+var data #hoje = ("dd/mm/yyyy - S");
+
+funcao texto #avaliarSituacao(var decimal #mediaFinal) {
+    se (#mediaFinal >= #MEDIA_APROVACAO!) {
+        retorna "APROVADO";
+    } senao se (#mediaFinal >= #MEDIA_RECUPERACAO!) {
+        retorna "EM RECUPERACAO";
+    } senao {
+        retorna "REPROVADO";
+    }
+}
+
+mostrar("==========================================");
+mostrar("   SISTEMA DE BOLETIM INTERATIVO LEBRE    ");
+mostrar("   Data: " + #hoje);
+mostrar("==========================================");
+
+var lista #historicoBoletim;
+var texto #continuar = "s";
+
+enquanto (#continuar == "s" ou #continuar == "S") {
+    mostrar("");
+    mostrar("Digite o nome do aluno:");
+    var texto #nome = carregar();
+
+    mostrar("Digite a Nota 1 de " + #nome + ":");
+    var decimal #n1 = paraDecimal(carregar());
+
+    mostrar("Digite a Nota 2 de " + #nome + ":");
+    var decimal #n2 = paraDecimal(carregar());
+
+    mostrar("Digite a Nota 3 de " + #nome + ":");
+    var decimal #n3 = paraDecimal(carregar());
+
+    var decimal #med = media(#n1, #n2, #n3);
+    var decimal #maior = maximo(#n1, #n2, #n3);
+    var decimal #menor = minimo(#n1, #n2, #n3);
+    var decimal #pts = soma(#n1, #n2, #n3);
+
+    var texto #status = #avaliarSituacao(#med);
+
+    mostrar("------------------------------------------");
+    mostrar("RESULTADO: " + #nome);
+    mostrar("Soma dos pontos: " + #pts);
+    mostrar("Media: " + #med);
+    mostrar("Maior nota: " + #maior);
+    mostrar("Menor nota: " + #menor);
+    mostrar("Situacao: " + #status);
+    mostrar("------------------------------------------");
+
+    mostrar("Deseja continuar? (s/n)");
+    #continuar = carregar();
+}
+
+mostrar("Programa finalizado.");
