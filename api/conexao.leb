@@ -1,0 +1,12 @@
+var texto #host = "localhost";
+var texto #usuario = "root";
+var texto #senha = "apple";
+var texto #banco = "agenda";
+
+var booleano #conectado = mysqlConectar(#host, #usuario, #senha, #banco);
+
+se (#conectado) {
+    mostrar("Conexao com MySQL estabelecida com sucesso.");
+} senao {
+    mostrar("Erro critico: Falha ao conectar no banco de dados.");
+}

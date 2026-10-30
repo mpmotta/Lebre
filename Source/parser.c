@@ -74,9 +74,17 @@ ASTNode* parse_primary() {
         return node;
     }
     if (tkns[pos].type == T_ABRE_PAR) {
-        pos++; ASTNode* expr = parse_expression();
+        node = create_node(AST_LITERAL);
+        pos++;
+        while (tkns[pos].type != T_FECHA_PAR && tkns[pos].type != T_FIM) {
+            if (tkns[pos].type == T_VIRGULA) {
+                pos++;
+            } else {
+                node->args[node->arg_count++] = parse_expression();
+            }
+        }
         if (tkns[pos].type == T_FECHA_PAR) pos++;
-        return expr;
+        return node;
     }
     
     char msg[300];

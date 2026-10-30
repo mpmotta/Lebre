@@ -28,6 +28,9 @@ int main(int argc, char** argv) {
     srand((unsigned int)time(NULL));
     ambiente_global.count = 0;
     ambiente_global.pai = NULL;
+    
+    registrar_modulo_mysql(&ambiente_global);
+    registrar_modulo_http(&ambiente_global);
 
     if (argc == 1) {
         printf("Interpretador Lebre v1.0\n");
@@ -76,6 +79,7 @@ int main(int argc, char** argv) {
             tokens = malloc(sizeof(Token) * 10000);
             lex(linha_lida, tokens);
             ASTNode* root = parse(tokens);
+            analisar_semantica(root);
             executa(root, &ambiente_global);
             
             free(tokens);
@@ -105,6 +109,7 @@ int main(int argc, char** argv) {
         tokens = malloc(sizeof(Token) * 10000);
         lex(buffer, tokens);
         ASTNode* root = parse(tokens);
+        analisar_semantica(root);
         executa(root, &ambiente_global);
         free(tokens);
     } else {

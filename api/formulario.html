@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Novo Cadastro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body class="bg-light">
+
+    <div class="container mt-5" style="max-width: 600px;">
+        <h2 class="mb-4 text-center" id="titulo-pagina">Novo Cadastro</h2>
+        
+        <div class="card shadow-sm">
+            <div class="card-body p-4">
+                <form id="form-contato">
+                    <input type="hidden" id="id-contato" value="0">
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Nome Completo</label>
+                        <input type="text" class="form-control" id="nome" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Fone</label>
+                        <input type="text" class="form-control" id="fone" required>
+                    </div>
+                    
+                    <div class="mb-4">
+                        <label class="form-label">E-mail</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="index.html" class="btn btn-secondary px-4">Voltar</a>
+                        <button type="submit" class="btn btn-primary px-4">Salvar Contato</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const urlParams = new URLSearchParams(window.location.search);
+        const idEdicao = urlParams.get('id');
+
+        if (idEdicao) {
+            document.getElementById('titulo-pagina').innerText = "Editar Cadastro";
+            document.getElementById('id-contato').value = idEdicao;
+            carregarDados(idEdicao);
+        }
+
+        async function carregarDados(id) {
+            const resposta = await fetch('http://localhost:8000', {
+                method: 'POST',
+                body: `buscar|${id}|`
+            });
+            const dados = await resposta.json();
+            
+            if (dados.length > 0) {
+                document.getElementById('nome').value = dados[0].nome || '';
+                document.getElementById('fone').value = dados[0].fone || '';
+                document.getElementById('email').value = dados[0].email || '';
+            }
+        }
+
+        document.getElementById('form-contato').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const id = document.getElementById('id-contato').value;
+            const nome = document.getElementById('nome').value.replace(/\|/g, '');
+            const fone = document.getElementById('fone').value.replace(/\|/g, '');
+            const email = document.getElementById('email').value.replace(/\|/g, '');
+            
+            await fetch('http://localhost:8000', {
+                method: 'POST',
+                body: `salvar|${id}|${nome}|${fone}|${email}|`
+            });
+            
+            Swal.fire({
+                title: 'Sucesso!',
+                text: 'Contato salvo.',
+                icon: 'success',
+                confirmButtonText: 'OK'
+            }).then(() => {
+                window.location.href = 'index.html';
+            });
+        });
+    </script>
+</body>
+</html>

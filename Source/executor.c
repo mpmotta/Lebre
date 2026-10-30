@@ -53,6 +53,11 @@ LebreValue avalia_expressao(ASTNode* node, Ambiente* env) {
     }
     if (node->type == AST_CHAMADA_USER_FUNC) {
         LebreValue func = get_var(env, node->name);
+        
+        if (func.type == VAL_FUNCAO_C) {
+            return func.data.func_c(env, node->args, node->arg_count);
+        }
+        
         if (func.type != VAL_FUNCAO) {
             lancar_erro("Tentativa de chamar algo que nao e uma funcao");
         }

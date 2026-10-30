@@ -1,0 +1,37 @@
+incluir "model.leb"
+
+funcao processarRequisicao() {
+    var texto #requisicao = receberRequisicao()
+    
+    var lista #linhas = dividir(#requisicao, "\n")
+    var int #qtd = contar(#linhas)
+    
+    var booleano #executou = falso
+    
+    se (#qtd > 0) {
+        var texto #corpo = #linhas[#qtd - 1]
+        var lista #dados = dividir(#corpo, "|")
+        var int #qtdDados = contar(#dados)
+        
+        se (#qtdDados > 1) {
+            var texto #acao = #dados[0]
+            
+            se (#acao === "excluir") {
+                excluirRegistro(#dados[1])
+                #executou = verdadeiro
+            }
+            senao se (#acao === "salvar") {
+                salvarRegistro(#dados[1], #dados[2], #dados[3], #dados[4])
+                #executou = verdadeiro
+            }
+            senao se (#acao === "buscar") {
+                buscarRegistro(#dados[1])
+                #executou = verdadeiro
+            }
+        }
+    }
+    
+    se (#executou === falso) {
+        listarRegistros()
+    }
+}

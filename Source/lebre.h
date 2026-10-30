@@ -54,10 +54,13 @@ typedef struct ASTNode {
 } ASTNode;
 
 typedef enum {
-    VAL_INT, VAL_DEC, VAL_TEXTO, VAL_BOOL, VAL_LISTA, VAL_FUNCAO
+    VAL_INT, VAL_DEC, VAL_TEXTO, VAL_BOOL, VAL_LISTA, VAL_FUNCAO, VAL_FUNCAO_C
 } ValueType;
 
 struct LebreValue;
+struct Ambiente;
+
+typedef struct LebreValue (*FuncNativaC)(struct Ambiente*, struct ASTNode**, int);
 
 typedef struct {
     int tamanho;
@@ -74,6 +77,7 @@ typedef struct LebreValue {
         int b;
         LebreLista l;
         ASTNode* func_def;
+        FuncNativaC func_c;
     } data;
 } LebreValue;
 
@@ -96,9 +100,13 @@ extern int flag_return;
 void lancar_erro(const char* msg);
 void lex(const char* src, Token* tokens);
 ASTNode* parse(Token* tokens);
+void analisar_semantica(ASTNode* root);
 LebreValue get_var(Ambiente* env, const char* name);
 void set_var(Ambiente* env, const char* name, LebreValue val, int is_const, int is_global);
 LebreValue avalia_expressao(ASTNode* node, Ambiente* env);
 void executa(ASTNode* node, Ambiente* env);
+
+void registrar_modulo_mysql(Ambiente* env);
+void registrar_modulo_http(Ambiente* env);
 
 #endif

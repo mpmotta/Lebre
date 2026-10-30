@@ -1,0 +1,11 @@
+incluir "conexao.leb"
+incluir "controller.leb"
+
+iniciarServidor(8000)
+
+mostrar("servidor rodando na porta 8000")
+mostrar("http://localhost:8000")
+
+enquanto (verdadeiro) {
+    processarRequisicao()
+}
