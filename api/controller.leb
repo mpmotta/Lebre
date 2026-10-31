@@ -1,37 +1,83 @@
-incluir "model.leb"
+incluir "model.leb";
 
-funcao processarRequisicao() {
-    var texto #requisicao = receberRequisicao()
-    
-    var lista #linhas = dividir(#requisicao, "\n")
-    var int #qtd = contar(#linhas)
-    
-    var booleano #executou = falso
+funcao consultar() {
+    Objeto #pessoaModel = novo Pessoa();
+    var texto #result = #pessoaModel.consulta();
+    retorna #result;
+}
+
+funcao consultaID(texto #id) {
+    Objeto #pessoaModel = novo Pessoa();
+    var texto #result = #pessoaModel.consultaID(#id);
+    retorna #result;
+}
+
+funcao inserir(#pessoa) {
+    se (contar(#pessoa.#nome) == 0 || contar(#pessoa.#fone) == 0 || contar(#pessoa.#email) == 0) {
+        enviarResposta("erro: campo vazio");
+    } senao {
+        Objeto #pessoaModel = novo Pessoa();
+        #pessoaModel.#nome = #pessoa.#nome;
+        #pessoaModel.#fone = #pessoa.#fone;
+        #pessoaModel.#email = #pessoa.#email;
+        #pessoaModel.inserir();
+        enviarResposta("[{\"status\":\"cadastro_ok\"}]");
+    }
+}
+
+funcao editar(#pessoa, texto #id) {
+    se (contar(#pessoa.#nome) == 0 || contar(#pessoa.#fone) == 0 || contar(#pessoa.#email) == 0) {
+        enviarResposta("erro: campo vazio");
+    } senao {
+        Objeto #pessoaModel = novo Pessoa();
+        #pessoaModel.#nome = #pessoa.#nome;
+        #pessoaModel.#fone = #pessoa.#fone;
+        #pessoaModel.#email = #pessoa.#email;
+        #pessoaModel.editar(#id);
+        enviarResposta("[{\"status\":\"edit_ok\"}]");
+    }
+}
+
+funcao excluir(texto #id) {
+    Objeto #pessoaModel = novo Pessoa();
+    #pessoaModel.excluir(#id);
+    enviarResposta("[{\"status\":\"delete_ok\"}]");
+}
+
+funcao handleRequest() {
+    var texto #requisicao = receberRequisicao();
+    var lista #linhas = dividir(#requisicao, "\n");
+    var int #qtd = contar(#linhas);
     
     se (#qtd > 0) {
-        var texto #corpo = #linhas[#qtd - 1]
-        var lista #dados = dividir(#corpo, "|")
-        var int #qtdDados = contar(#dados)
+        var texto #corpo = #linhas[#qtd - 1];
+        var lista #dados = dividir(#corpo, "|");
+        var int #qtdDados = contar(#dados);
         
         se (#qtdDados > 1) {
-            var texto #acao = #dados[0]
+            var texto #acao = #dados[0];
             
             se (#acao === "excluir") {
-                excluirRegistro(#dados[1])
-                #executou = verdadeiro
+                excluir(#dados[1]);
+            } senao se (#acao === "salvar") {
+                Objeto #pessoa = novo Pessoa();
+                #pessoa.#nome = #dados[2];
+                #pessoa.#fone = #dados[3];
+                #pessoa.#email = #dados[4];
+                
+                se (#dados[1] === "0") {
+                    inserir(#pessoa);
+                } senao {
+                    editar(#pessoa, #dados[1]);
+                }
+            } senao se (#acao === "buscar") {
+                var texto #json = consultaID(#dados[1]);
+                enviarResposta(#json);
             }
-            senao se (#acao === "salvar") {
-                salvarRegistro(#dados[1], #dados[2], #dados[3], #dados[4])
-                #executou = verdadeiro
-            }
-            senao se (#acao === "buscar") {
-                buscarRegistro(#dados[1])
-                #executou = verdadeiro
-            }
+            retorna;
         }
     }
     
-    se (#executou === falso) {
-        listarRegistros()
-    }
+    var texto #jsonTodos = consultar();
+    enviarResposta(#jsonTodos);
 }

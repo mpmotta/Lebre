@@ -13,6 +13,11 @@ int eh_scream_snake(const char* str) {
 
 void lex(const char* src, Token* tokens) {
     int i = 0, t = 0;
+
+    if ((unsigned char)src[0] == 0xEF && (unsigned char)src[1] == 0xBB && (unsigned char)src[2] == 0xBF) {
+        i += 3;
+    }
+
     while (src[i] != '\0') {
         if (isspace((unsigned char)src[i])) {
             i++;
@@ -47,6 +52,12 @@ void lex(const char* src, Token* tokens) {
             tokens[t++].type = T_STRING;
             continue;
         }
+        
+        if ((unsigned char)src[i] > 127) {
+            i++;
+            continue;
+        }
+
         if (isdigit((unsigned char)src[i]) || (src[i] == '-' && isdigit((unsigned char)src[i+1]) && (t == 0 || (tokens[t-1].type != T_NUM_INT && tokens[t-1].type != T_NUM_DEC && tokens[t-1].type != T_IDENTIFICADOR && tokens[t-1].type != T_SCREAM_SNAKE && tokens[t-1].type != T_FECHA_PAR && tokens[t-1].type != T_FECHA_COL)))) {
             int k = 0, is_dec = 0;
             if (src[i] == '-') tokens[t].value[k++] = src[i++];
@@ -84,6 +95,9 @@ void lex(const char* src, Token* tokens) {
             else if (strcmp(v, "booleano") == 0) tokens[t].type = T_BOOLEANO;
             else if (strcmp(v, "lista") == 0) tokens[t].type = T_LISTA;
             else if (strcmp(v, "data") == 0) tokens[t].type = T_DATA;
+            else if (strcmp(v, "classe") == 0) tokens[t].type = T_CLASSE;
+            else if (strcmp(v, "Objeto") == 0) tokens[t].type = T_OBJETO;
+            else if (strcmp(v, "novo") == 0) tokens[t].type = T_NOVO;
             else if (strcmp(v, "VERDADEIRO") == 0 || strcmp(v, "verdadeiro") == 0) tokens[t].type = T_VERDADEIRO;
             else if (strcmp(v, "FALSO") == 0 || strcmp(v, "falso") == 0) tokens[t].type = T_FALSO;
             else if (strcmp(v, "se") == 0) tokens[t].type = T_SE;
@@ -153,6 +167,7 @@ void lex(const char* src, Token* tokens) {
             case ';': tokens[t++].type = T_PONTO_VIRGULA; break;
             case ',': tokens[t++].type = T_VIRGULA; break;
             case ':': tokens[t++].type = T_DOIS_PONTOS; break;
+            case '.': tokens[t++].type = T_PONTO; break;
             default: tokens[t++].type = T_DESCONHECIDO; break;
         }
     }

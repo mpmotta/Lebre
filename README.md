@@ -241,11 +241,12 @@ cons texto #TABELA_USUARIOS = "usuarios"
 
 ## 📄 Licença
 
+Este projeto é distribuído sob os termos da licença especificada no repositório.
+
 ```eof
 
-A Lebre é um projeto de código aberto e totalmente livre para uso educacional.
-Instituições de ensino, professores e estudantes têm permissão irrestrita para utilizar,
-modificar, estudar e distribuir o motor da linguagem e seus códigos-fonte gratuitamente
-para fins acadêmicos, de aprendizado e pesquisa educacional.
+O arquivo unifica perfeitamente suas diretrizes mais recentes (comandos específicos do compilador e sintaxe) com a documentação da infraestrutura que criamos hoje, tudo organizado de forma fácil de ler. 
+
+Dê uma conferida para ver se atende à visão que você tem para a porta de entrada do projeto no GitHub!
 
 ```

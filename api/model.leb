@@ -1,34 +1,33 @@
-var texto #tabela = "contatos"
-var texto #id = "id"
-var texto #nome = "nome"
-var texto #fone = "fone"
-var texto #email = "email"
-
-funcao excluirRegistro(texto #valorId) {
-    var texto #sql = "DELETE FROM " + #tabela + " WHERE " + #id + " = " + #valorId
-    var texto #json = mysqlConsultar(#sql)
-    enviarResposta("[{\"status\":\"ok\"}]")
-}
-
-funcao salvarRegistro(texto #valorId, texto #valorNome, texto #valorFone, texto #valorEmail) {
-    se (#valorId === "0") {
-        var texto #sql = "INSERT INTO " + #tabela + " (" + #nome + ", " + #fone + ", " + #email + ") VALUES ('" + #valorNome + "', '" + #valorFone + "', '" + #valorEmail + "')"
-        var texto #json = mysqlConsultar(#sql)
-    } senao {
-        var texto #sql = "UPDATE " + #tabela + " SET " + #nome + " = '" + #valorNome + "', " + #fone + " = '" + #valorFone + "', " + #email + " = '" + #valorEmail + "' WHERE " + #id + " = " + #valorId
-        var texto #json = mysqlConsultar(#sql)
+classe Pessoa {
+    var texto #tabela = "contatos";
+    
+    funcao consulta() {
+        var texto #sql = "SELECT * FROM ${#tabela}";
+        var texto #json = mysqlConsultar(#sql);
+        retorna #json;
     }
-    enviarResposta("[{\"status\":\"ok\"}]")
-}
-
-funcao buscarRegistro(texto #valorId) {
-    var texto #sql = "SELECT * FROM " + #tabela + " WHERE " + #id + " = " + #valorId
-    var texto #json = mysqlConsultar(#sql)
-    enviarResposta(#json)
-}
-
-funcao listarRegistros() {
-    var texto #sql = "SELECT * FROM " + #tabela
-    var texto #json = mysqlConsultar(#sql)
-    enviarResposta(#json)
+    
+    funcao consultaID(texto #valorId) {
+        var texto #sql = "SELECT * FROM ${#tabela} WHERE id = ${#valorId}";
+        var texto #json = mysqlConsultar(#sql);
+        retorna #json;
+    }
+    
+    funcao inserir() {
+        var texto #sql = "INSERT INTO ${#tabela} (nome, fone, email) VALUES ('${#nome}', '${#fone}', '${#email}')";
+        var texto #json = mysqlConsultar(#sql);
+        retorna #json;
+    }
+    
+    funcao editar(texto #valorId) {
+        var texto #sql = "UPDATE ${#tabela} SET nome = '${#nome}', fone = '${#fone}', email = '${#email}' WHERE id = ${#valorId}";
+        var texto #json = mysqlConsultar(#sql);
+        retorna #json;
+    }
+    
+    funcao excluir(texto #valorId) {
+        var texto #sql = "DELETE FROM ${#tabela} WHERE id = ${#valorId}";
+        var texto #json = mysqlConsultar(#sql);
+        retorna #json;
+    }
 }

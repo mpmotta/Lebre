@@ -42,6 +42,79 @@ LebreValue avalia_expressao(ASTNode* node, Ambiente* env) {
         return val;
     }
     if (node->type == AST_VARIAVEL) return get_var(env, node->name);
+    
+    if (node->type == AST_INSTANCIA) {
+        LebreValue classe_val = get_var(env, node->name);
+        if (classe_val.type != VAL_CLASSE) {
+            lancar_erro("Identificador nao e uma classe valida");
+        }
+        ASTNode* classe_def = classe_val.data.classe_def;
+        
+        Ambiente* obj_env = malloc(sizeof(Ambiente));
+        obj_env->count = 0; obj_env->pai = NULL;
+        
+        executa(classe_def->body, obj_env);
+        obj_env->pai = env;
+        
+        LebreValue construtor_func;
+        int tem_construtor = 0;
+        for (int i = 0; i < obj_env->count; i++) {
+            if (strcmp(obj_env->vars[i].name, "construtor") == 0) {
+                construtor_func = obj_env->vars[i].val;
+                tem_construtor = 1;
+                break;
+            }
+        }
+        
+        if (tem_construtor && construtor_func.type == VAL_FUNCAO) {
+            Ambiente* func_env = malloc(sizeof(Ambiente));
+            func_env->count = 0; func_env->pai = obj_env;
+            for (int i = 0; i < node->arg_count; i++) {
+                set_var(func_env, construtor_func.data.func_def->args[i]->name, avalia_expressao(node->args[i], env), 0, 0);
+            }
+            int old_flag = flag_return;
+            flag_return = 0;
+            executa(construtor_func.data.func_def->body, func_env);
+            flag_return = old_flag;
+            free(func_env);
+        }
+        
+        val.type = VAL_OBJETO;
+        val.data.obj_env = obj_env;
+        return val;
+    }
+    
+    if (node->type == AST_PROPRIEDADE_ACESSO) {
+        LebreValue objeto = get_var(env, node->name);
+        if (objeto.type != VAL_OBJETO) {
+            lancar_erro("Tentativa de acessar propriedade de algo que nao e objeto");
+        }
+        return get_var(objeto.data.obj_env, node->prop_name);
+    }
+    
+    if (node->type == AST_METODO_CHAMADA) {
+        LebreValue objeto = get_var(env, node->name);
+        if (objeto.type != VAL_OBJETO) {
+            lancar_erro("Tentativa de chamar metodo de algo que nao e objeto");
+        }
+        LebreValue func = get_var(objeto.data.obj_env, node->prop_name);
+        if (func.type != VAL_FUNCAO) {
+            lancar_erro("Metodo nao encontrado no objeto");
+        }
+        Ambiente* func_env = malloc(sizeof(Ambiente));
+        func_env->count = 0; func_env->pai = objeto.data.obj_env;
+        for (int i = 0; i < node->arg_count; i++) {
+            set_var(func_env, func.data.func_def->args[i]->name, avalia_expressao(node->args[i], env), 0, 0);
+        }
+        int old_flag = flag_return;
+        flag_return = 0;
+        executa(func.data.func_def->body, func_env);
+        LebreValue res = global_return_val;
+        flag_return = old_flag;
+        free(func_env);
+        return res;
+    }
+
     if (node->type == AST_INDEX_ACESSO) {
         LebreValue lista = get_var(env, node->name);
         LebreValue idx = avalia_expressao(node->left, env);
@@ -300,8 +373,11 @@ void executa(ASTNode* node, Ambiente* env) {
     if (node->type == AST_PROGRAMA || node->type == AST_BLOCO) {
         for (int i = 0; i < node->arg_count; i++) { executa(node->args[i], env); if (flag_return) break; }
     }
-    else if (node->type == AST_CHAMADA_NATIVA || node->type == AST_CHAMADA_USER_FUNC) {
+    else if (node->type == AST_CHAMADA_NATIVA || node->type == AST_CHAMADA_USER_FUNC || node->type == AST_METODO_CHAMADA) {
         avalia_expressao(node, env);
+    }
+    else if (node->type == AST_CLASSE_DEF) {
+        LebreValue v; v.type = VAL_CLASSE; v.data.classe_def = node; set_var(env, node->name, v, 1, 1);
     }
     else if (node->type == AST_SE) {
         LebreValue cond = avalia_expressao(node->cond, env);
@@ -378,7 +454,7 @@ void executa(ASTNode* node, Ambiente* env) {
     }
     else if (node->type == AST_RETORNA) { global_return_val = avalia_expressao(node->right, env); flag_return = 1; }
     else if (node->type == AST_FUNCAO_DEF) {
-        LebreValue v; v.type = VAL_FUNCAO; v.data.func_def = node; set_var(env, node->name, v, 1, 1);
+        LebreValue v; v.type = VAL_FUNCAO; v.data.func_def = node; set_var(env, node->name, v, 1, 0);
     }
     else if (node->type == AST_DATA_DEF) {
         LebreValue fmt = avalia_expressao(node->right, env); char res[256]; formatar_data(res, fmt.data.s);
@@ -404,6 +480,9 @@ void executa(ASTNode* node, Ambiente* env) {
             } else if (node->var_type == T_BOOLEANO) {
                 d.type = VAL_BOOL;
                 d.data.b = 0;
+            } else if (node->var_type == T_OBJETO) {
+                d.type = VAL_OBJETO;
+                d.data.obj_env = NULL;
             } else {
                 d.type = VAL_INT;
                 d.data.i = 0;
@@ -413,6 +492,13 @@ void executa(ASTNode* node, Ambiente* env) {
     }
     else if (node->type == AST_ATRIBUICAO) {
         set_var(env, node->name, avalia_expressao(node->right, env), 0, node->name[strlen(node->name)-1] == '!');
+    }
+    else if (node->type == AST_PROPRIEDADE_ATRIBUICAO) {
+        LebreValue objeto = get_var(env, node->name);
+        if (objeto.type != VAL_OBJETO) {
+            lancar_erro("Tentativa de atribuir propriedade a algo que nao e objeto");
+        }
+        set_var(objeto.data.obj_env, node->prop_name, avalia_expressao(node->right, env), 0, 0);
     }
     else if (node->type == AST_INDEX_ATRIBUICAO) {
         LebreValue lista = get_var(env, node->name); LebreValue idx = avalia_expressao(node->left, env);
@@ -435,5 +521,7 @@ void executa(ASTNode* node, Ambiente* env) {
         else if (v.type == VAL_DEC) printf("%g\n", v.data.d);
         else if (v.type == VAL_TEXTO) printf("%s\n", v.data.s);
         else if (v.type == VAL_BOOL) printf("%s\n", v.data.b ? "VERDADEIRO" : "FALSO");
+        else if (v.type == VAL_OBJETO) printf("[Objeto]\n");
+        else if (v.type == VAL_CLASSE) printf("[Classe]\n");
     }
 }

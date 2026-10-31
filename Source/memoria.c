@@ -29,7 +29,7 @@ void set_var(Ambiente* env, const char* name, LebreValue val, int is_const, int 
                     sprintf(msg, "Nao e permitido alterar a constante %s", name);
                     lancar_erro(msg);
                 }
-                if (curr->vars[i].val.type != val.type && curr->vars[i].val.type != VAL_FUNCAO) {
+                if (curr->vars[i].val.type != val.type && curr->vars[i].val.type != VAL_FUNCAO && curr->vars[i].val.type != VAL_CLASSE) {
                     char msg[256];
                     sprintf(msg, "Erro de tipagem na atribuicao da variavel %s", name);
                     lancar_erro(msg);

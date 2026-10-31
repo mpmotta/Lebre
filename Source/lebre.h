@@ -11,6 +11,7 @@
 typedef enum {
     T_FIM, T_DESCONHECIDO,
     T_VAR, T_CONS, T_INT, T_DECIMAL, T_TEXTO, T_BOOLEANO, T_LISTA, T_DATA,
+    T_CLASSE, T_OBJETO, T_NOVO,
     T_VERDADEIRO, T_FALSO,
     T_SE, T_SENAO, T_ENQUANTO, T_LINHA, T_LINHAS,
     T_FUNCAO, T_RETORNA, T_INCLUIR,
@@ -24,7 +25,7 @@ typedef enum {
     T_IGUAL, T_IDENTICO, T_DIFERENTE, T_MAIOR, T_MENOR, T_MAIOR_IGUAL, T_MENOR_IGUAL,
     T_E, T_OU, T_INCREMENTO, T_DECREMENTO,
     T_ABRE_PAR, T_FECHA_PAR, T_ABRE_CHAVE, T_FECHA_CHAVE, T_ABRE_COL, T_FECHA_COL,
-    T_PONTO_VIRGULA, T_VIRGULA, T_DOIS_PONTOS
+    T_PONTO_VIRGULA, T_VIRGULA, T_DOIS_PONTOS, T_PONTO
 } TokenType;
 
 typedef struct {
@@ -40,7 +41,8 @@ typedef enum {
     AST_MOSTRAR, AST_SE, AST_ENQUANTO, AST_LINHA, AST_LINHAS,
     AST_FUNCAO_DEF, AST_CHAMADA_USER_FUNC, AST_CHAMADA_NATIVA, AST_RETORNA,
     AST_ADICIONAR, AST_REMOVER, AST_INCLUIR, AST_SALVAR_ARQUIVO, AST_DATA_DEF,
-    AST_BINARIO, AST_LITERAL, AST_VARIAVEL
+    AST_BINARIO, AST_LITERAL, AST_VARIAVEL,
+    AST_CLASSE_DEF, AST_INSTANCIA, AST_PROPRIEDADE_ACESSO, AST_PROPRIEDADE_ATRIBUICAO, AST_METODO_CHAMADA
 } ASTNodeType;
 
 typedef struct ASTNode {
@@ -48,13 +50,14 @@ typedef struct ASTNode {
     TokenType op;
     TokenType var_type;
     char name[128];
+    char prop_name[128];
     struct ASTNode *left, *right, *cond, *body, *alt, *init, *step;
     struct ASTNode **args;
     int arg_count;
 } ASTNode;
 
 typedef enum {
-    VAL_INT, VAL_DEC, VAL_TEXTO, VAL_BOOL, VAL_LISTA, VAL_FUNCAO, VAL_FUNCAO_C
+    VAL_INT, VAL_DEC, VAL_TEXTO, VAL_BOOL, VAL_LISTA, VAL_FUNCAO, VAL_FUNCAO_C, VAL_CLASSE, VAL_OBJETO
 } ValueType;
 
 struct LebreValue;
@@ -78,6 +81,8 @@ typedef struct LebreValue {
         LebreLista l;
         ASTNode* func_def;
         FuncNativaC func_c;
+        ASTNode* classe_def;
+        struct Ambiente* obj_env;
     } data;
 } LebreValue;
 

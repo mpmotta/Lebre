@@ -8,10 +8,21 @@ ASTNode* create_node(ASTNodeType type) {
     node->op = T_FIM;
     node->var_type = T_FIM;
     node->name[0] = '\0';
+    node->prop_name[0] = '\0';
     node->left = node->right = node->cond = node->body = node->alt = node->init = node->step = NULL;
     node->args = malloc(sizeof(ASTNode*) * 50);
     node->arg_count = 0;
     return node;
+}
+
+void exigir_ponto_virgula() {
+    if (tkns[pos].type == T_PONTO_VIRGULA) {
+        pos++;
+    } else {
+        char msg[256];
+        sprintf(msg, "Faltou ponto e virgula no final da instrucao perto de '%s'", tkns[pos].value);
+        lancar_erro(msg);
+    }
 }
 
 int get_precedence(TokenType type) {
@@ -31,11 +42,94 @@ ASTNode* parse_expression();
 ASTNode* parse_statement();
 ASTNode* parse_bloco();
 
+ASTNode* parse_string_interp(const char* str) {
+    char buffer[256] = {0};
+    int i = 0, buf_i = 0;
+    ASTNode* root = NULL;
+
+    while (str[i] != '\0') {
+        if (str[i] == '$' && str[i+1] == '{') {
+            if (buf_i > 0) {
+                buffer[buf_i] = '\0';
+                ASTNode* lit = create_node(AST_LITERAL);
+                lit->op = T_STRING;
+                strcpy(lit->name, buffer);
+                if (!root) {
+                    root = lit;
+                } else {
+                    ASTNode* bin = create_node(AST_BINARIO);
+                    bin->op = T_SOMA_OP;
+                    bin->left = root;
+                    bin->right = lit;
+                    root = bin;
+                }
+                buf_i = 0;
+            }
+            i += 2;
+            char var_name[128] = {0};
+            int v_i = 0;
+            while (str[i] != '\0' && str[i] != '}') {
+                var_name[v_i++] = str[i++];
+            }
+            if (str[i] == '}') i++;
+            
+            ASTNode* var_node = create_node(AST_VARIAVEL);
+            strcpy(var_node->name, var_name);
+            
+            if (!root) {
+                root = var_node;
+            } else {
+                ASTNode* bin = create_node(AST_BINARIO);
+                bin->op = T_SOMA_OP;
+                bin->left = root;
+                bin->right = var_node;
+                root = bin;
+            }
+        } else {
+            buffer[buf_i++] = str[i++];
+        }
+    }
+    
+    if (buf_i > 0) {
+        buffer[buf_i] = '\0';
+        ASTNode* lit = create_node(AST_LITERAL);
+        lit->op = T_STRING;
+        strcpy(lit->name, buffer);
+        if (!root) {
+            root = lit;
+        } else {
+            ASTNode* bin = create_node(AST_BINARIO);
+            bin->op = T_SOMA_OP;
+            bin->left = root;
+            bin->right = lit;
+            root = bin;
+        }
+    }
+    
+    if (!root) {
+        root = create_node(AST_LITERAL);
+        root->op = T_STRING;
+        strcpy(root->name, "");
+    }
+    return root;
+}
+
 ASTNode* parse_primary() {
     ASTNode* node = create_node(AST_LITERAL);
     if (tkns[pos].type == T_CARREGAR) {
         node->type = AST_CHAMADA_NATIVA; node->op = tkns[pos].type; pos++;
         if (tkns[pos].type == T_ABRE_PAR) pos++;
+        if (tkns[pos].type == T_FECHA_PAR) pos++;
+        return node;
+    }
+    if (tkns[pos].type == T_NOVO) {
+        node->type = AST_INSTANCIA; pos++;
+        strcpy(node->name, tkns[pos].value); pos++;
+        if (tkns[pos].type == T_ABRE_PAR) pos++;
+        while (tkns[pos].type != T_FECHA_PAR && tkns[pos].type != T_FIM) {
+            if (tkns[pos].type == T_VIRGULA) pos++;
+            else node->args[node->arg_count++] = parse_expression();
+        }
         if (tkns[pos].type == T_FECHA_PAR) pos++;
         return node;
     }
@@ -49,12 +143,33 @@ ASTNode* parse_primary() {
         if (tkns[pos].type == T_FECHA_PAR) pos++;
         return node;
     }
-    if (tkns[pos].type == T_NUM_INT || tkns[pos].type == T_NUM_DEC || tkns[pos].type == T_STRING || tkns[pos].type == T_VERDADEIRO || tkns[pos].type == T_FALSO) {
+    if (tkns[pos].type == T_STRING) {
+        ASTNode* interp = parse_string_interp(tkns[pos].value);
+        pos++;
+        free(node);
+        return interp;
+    }
+    if (tkns[pos].type == T_NUM_INT || tkns[pos].type == T_NUM_DEC || tkns[pos].type == T_VERDADEIRO || tkns[pos].type == T_FALSO) {
         strcpy(node->name, tkns[pos].value); node->op = tkns[pos].type; pos++;
         return node;
     }
     if (tkns[pos].type == T_IDENTIFICADOR || tkns[pos].type == T_SCREAM_SNAKE) {
         strcpy(node->name, tkns[pos].value); pos++;
+        if (tkns[pos].type == T_PONTO) {
+            pos++;
+            strcpy(node->prop_name, tkns[pos].value); pos++;
+            if (tkns[pos].type == T_ABRE_PAR) {
+                node->type = AST_METODO_CHAMADA; pos++;
+                while (tkns[pos].type != T_FECHA_PAR && tkns[pos].type != T_FIM) {
+                    if (tkns[pos].type == T_VIRGULA) pos++;
+                    else node->args[node->arg_count++] = parse_expression();
+                }
+                if (tkns[pos].type == T_FECHA_PAR) pos++;
+                return node;
+            }
+            node->type = AST_PROPRIEDADE_ACESSO;
+            return node;
+        }
         if (tkns[pos].type == T_ABRE_COL) {
             node->type = AST_INDEX_ACESSO; pos++;
             node->left = parse_expression();
@@ -74,6 +189,7 @@ ASTNode* parse_primary() {
         return node;
     }
     if (tkns[pos].type == T_ABRE_PAR) {
+        free(node);
         node = create_node(AST_LITERAL);
         pos++;
         while (tkns[pos].type != T_FECHA_PAR && tkns[pos].type != T_FIM) {
@@ -132,6 +248,13 @@ ASTNode* parse_statement() {
         return create_node(AST_VAZIO);
     }
     
+    if (tkns[pos].type == T_CLASSE) {
+        node = create_node(AST_CLASSE_DEF); pos++;
+        strcpy(node->name, tkns[pos].value); pos++;
+        node->body = parse_bloco();
+        return node;
+    }
+
     if (tkns[pos].type == T_SE) {
         node = create_node(AST_SE); pos++;
         if (tkns[pos].type == T_ABRE_PAR) pos++;
@@ -173,7 +296,7 @@ ASTNode* parse_statement() {
         if (tkns[pos].type == T_ABRE_PAR) pos++;
         node->init = parse_statement();
         node->cond = parse_expression();
-        if (tkns[pos].type == T_PONTO_VIRGULA) pos++;
+        exigir_ponto_virgula();
         node->step = parse_statement();
         if (tkns[pos].type == T_FECHA_PAR) pos++;
         node->body = parse_bloco();
@@ -184,7 +307,7 @@ ASTNode* parse_statement() {
         node = create_node(AST_LINHAS); pos++;
         if (tkns[pos].type == T_ABRE_PAR) pos++;
         if (tkns[pos].type == T_VAR) pos++;
-        if (tkns[pos].type == T_INT || tkns[pos].type == T_TEXTO || tkns[pos].type == T_DECIMAL || tkns[pos].type == T_BOOLEANO) pos++;
+        if (tkns[pos].type == T_INT || tkns[pos].type == T_TEXTO || tkns[pos].type == T_DECIMAL || tkns[pos].type == T_BOOLEANO || tkns[pos].type == T_OBJETO) pos++;
         strcpy(node->name, tkns[pos].value); pos++; 
         if (tkns[pos].type == T_DOIS_PONTOS) pos++;
         node->right = parse_expression();
@@ -198,7 +321,7 @@ ASTNode* parse_statement() {
         if (tkns[pos].type == T_ABRE_PAR) pos++;
         if (tkns[pos].type == T_STRING) { strcpy(node->name, tkns[pos].value); pos++; }
         if (tkns[pos].type == T_FECHA_PAR) pos++;
-        if (tkns[pos].type == T_PONTO_VIRGULA) pos++;
+        exigir_ponto_virgula();
         return node;
     }
     if (tkns[pos].type == T_ADICIONAR) {
@@ -208,7 +331,7 @@ ASTNode* parse_statement() {
         if (tkns[pos].type == T_VIRGULA) pos++;
         node->right = parse_expression();
         if (tkns[pos].type == T_FECHA_PAR) pos++;
-        if (tkns[pos].type == T_PONTO_VIRGULA) pos++;
+        exigir_ponto_virgula();
         return node;
     }
     if (tkns[pos].type == T_REMOVER) {
@@ -218,7 +341,7 @@ ASTNode* parse_statement() {
         if (tkns[pos].type == T_VIRGULA) pos++;
         node->right = parse_expression();
         if (tkns[pos].type == T_FECHA_PAR) pos++;
-        if (tkns[pos].type == T_PONTO_VIRGULA) pos++;
+        exigir_ponto_virgula();
         return node;
     }
     if (tkns[pos].type == T_SALVAR_ARQUIVO) {
@@ -228,32 +351,51 @@ ASTNode* parse_statement() {
         if (tkns[pos].type == T_VIRGULA) pos++;
         node->right = parse_expression(); 
         if (tkns[pos].type == T_FECHA_PAR) pos++;
-        if (tkns[pos].type == T_PONTO_VIRGULA) pos++;
+        exigir_ponto_virgula();
         return node;
     }
     if (tkns[pos].type == T_RETORNA) {
         node = create_node(AST_RETORNA); pos++;
-        node->right = parse_expression();
-        if (tkns[pos].type == T_PONTO_VIRGULA) pos++;
+        if (tkns[pos].type == T_PONTO_VIRGULA) {
+            node->right = NULL;
+        } else {
+            node->right = parse_expression();
+        }
+        exigir_ponto_virgula();
         return node;
     }
     if (tkns[pos].type == T_FUNCAO) {
         node = create_node(AST_FUNCAO_DEF); pos++;
-        if (tkns[pos].type == T_INT || tkns[pos].type == T_TEXTO || tkns[pos].type == T_DECIMAL || tkns[pos].type == T_BOOLEANO || tkns[pos].type == T_LISTA) pos++;
+        if (tkns[pos].type == T_INT || tkns[pos].type == T_TEXTO || tkns[pos].type == T_DECIMAL || tkns[pos].type == T_BOOLEANO || tkns[pos].type == T_LISTA || tkns[pos].type == T_OBJETO) pos++;
         strcpy(node->name, tkns[pos].value); pos++;
         if (tkns[pos].type == T_ABRE_PAR) pos++;
+        
         while (tkns[pos].type != T_FECHA_PAR && tkns[pos].type != T_FIM) {
-            if (tkns[pos].type == T_VIRGULA || tkns[pos].type == T_VAR || tkns[pos].type == T_INT || tkns[pos].type == T_TEXTO || tkns[pos].type == T_DECIMAL || tkns[pos].type == T_BOOLEANO || tkns[pos].type == T_LISTA) pos++;
-            else { ASTNode* arg = create_node(AST_VARIAVEL); strcpy(arg->name, tkns[pos].value); node->args[node->arg_count++] = arg; pos++; }
+            if (tkns[pos].type == T_VIRGULA) {
+                pos++;
+            } else if (tkns[pos].type == T_VAR || tkns[pos].type == T_INT || tkns[pos].type == T_TEXTO || tkns[pos].type == T_DECIMAL || tkns[pos].type == T_BOOLEANO || tkns[pos].type == T_LISTA || tkns[pos].type == T_OBJETO) {
+                pos++;
+            } else if (tkns[pos].type == T_IDENTIFICADOR || tkns[pos].type == T_SCREAM_SNAKE) {
+                ASTNode* arg = create_node(AST_VARIAVEL); 
+                strcpy(arg->name, tkns[pos].value); 
+                node->args[node->arg_count++] = arg; 
+                pos++;
+            } else {
+                pos++;
+            }
         }
         if (tkns[pos].type == T_FECHA_PAR) pos++;
         node->body = parse_bloco();
         return node;
     }
-    if (tkns[pos].type == T_VAR || tkns[pos].type == T_CONS) {
-        int is_const = (tkns[pos].type == T_CONS); pos++;
+    if (tkns[pos].type == T_VAR || tkns[pos].type == T_CONS || tkns[pos].type == T_OBJETO) {
+        int is_const = (tkns[pos].type == T_CONS);
+        int is_obj = (tkns[pos].type == T_OBJETO);
+        pos++;
         TokenType v_type = T_INT;
-        if (tkns[pos].type == T_INT || tkns[pos].type == T_TEXTO || tkns[pos].type == T_DECIMAL || tkns[pos].type == T_BOOLEANO || tkns[pos].type == T_LISTA) {
+        if (is_obj) {
+            v_type = T_OBJETO;
+        } else if (tkns[pos].type == T_INT || tkns[pos].type == T_TEXTO || tkns[pos].type == T_DECIMAL || tkns[pos].type == T_BOOLEANO || tkns[pos].type == T_LISTA) {
             v_type = tkns[pos].type;
             pos++;
         }
@@ -264,7 +406,7 @@ ASTNode* parse_statement() {
             if (tkns[pos].type == T_ABRE_PAR) pos++;
             node->right = parse_expression();
             if (tkns[pos].type == T_FECHA_PAR) pos++;
-            if (tkns[pos].type == T_PONTO_VIRGULA) pos++;
+            exigir_ponto_virgula();
             return node;
         }
         if (tkns[pos].type != T_IDENTIFICADOR && tkns[pos].type != T_SCREAM_SNAKE) {
@@ -279,7 +421,7 @@ ASTNode* parse_statement() {
             node->right = parse_expression();
         }
         
-        if (tkns[pos].type == T_PONTO_VIRGULA) pos++;
+        exigir_ponto_virgula();
         return node;
     }
 
@@ -290,36 +432,55 @@ ASTNode* parse_statement() {
         tkns[pos].type == T_CARREGAR) {
         
         ASTNode* expr = parse_expression();
-        if (tkns[pos].type == T_PONTO_VIRGULA) pos++;
+        exigir_ponto_virgula();
         return expr;
     }
 
     if (tkns[pos].type == T_IDENTIFICADOR || tkns[pos].type == T_SCREAM_SNAKE) {
         char temp_name[128]; strcpy(temp_name, tkns[pos].value); pos++;
+        if (tkns[pos].type == T_PONTO) {
+            pos++;
+            char prop_name[128]; strcpy(prop_name, tkns[pos].value); pos++;
+            if (tkns[pos].type == T_ATRIBUICAO) {
+                node = create_node(AST_PROPRIEDADE_ATRIBUICAO);
+                strcpy(node->name, temp_name);
+                strcpy(node->prop_name, prop_name);
+                pos++;
+                node->right = parse_expression();
+                exigir_ponto_virgula();
+                return node;
+            }
+            if (tkns[pos].type == T_ABRE_PAR) {
+                pos -= 3;
+                ASTNode* expr = parse_expression();
+                exigir_ponto_virgula();
+                return expr;
+            }
+        }
         if (tkns[pos].type == T_ABRE_COL) {
             node = create_node(AST_INDEX_ATRIBUICAO); strcpy(node->name, temp_name); pos++;
             node->left = parse_expression();
             if (tkns[pos].type == T_FECHA_COL) pos++;
             if (tkns[pos].type == T_ATRIBUICAO) { pos++; node->right = parse_expression(); }
-            if (tkns[pos].type == T_PONTO_VIRGULA) pos++;
+            exigir_ponto_virgula();
             return node;
         }
         if (tkns[pos].type == T_INCREMENTO || tkns[pos].type == T_DECREMENTO) {
             node = create_node(tkns[pos].type == T_INCREMENTO ? AST_INCREMENTO : AST_DECREMENTO);
             strcpy(node->name, temp_name); pos++;
-            if (tkns[pos].type == T_PONTO_VIRGULA) pos++;
+            exigir_ponto_virgula();
             return node;
         }
         if (tkns[pos].type == T_ATRIBUICAO) {
             node = create_node(AST_ATRIBUICAO); strcpy(node->name, temp_name); pos++;
             node->right = parse_expression();
-            if (tkns[pos].type == T_PONTO_VIRGULA) pos++;
+            exigir_ponto_virgula();
             return node;
         }
         if (tkns[pos].type == T_ABRE_PAR) {
             pos--; 
             ASTNode* expr = parse_expression();
-            if (tkns[pos].type == T_PONTO_VIRGULA) pos++;
+            exigir_ponto_virgula();
             return expr;
         }
         
@@ -333,7 +494,7 @@ ASTNode* parse_statement() {
         if (tkns[pos].type == T_ABRE_PAR) pos++;
         node->right = parse_expression();
         if (tkns[pos].type == T_FECHA_PAR) pos++;
-        if (tkns[pos].type == T_PONTO_VIRGULA) pos++;
+        exigir_ponto_virgula();
         return node;
     }
     
