@@ -1,93 +1,223 @@
-Documentacao Oficial da Linguagem Lebre (v1.0)
+================================================================================
+                                 LEBRE
+================================================================================
 
-A linguagem Lebre e uma ferramenta interpretada, estruturada em C, projetada para ser clara, com tipagem forte e regras rigidas de nomenclatura. Seus arquivos utilizam a extensao .leb.
+Lebre é uma linguagem de programação interpretada, de tipagem forte e sintaxe 
+baseada na língua portuguesa. Desenvolvida estruturalmente do zero em C (sem 
+dependências de runtimes pesados), foi projetada para ser clara, semântica e 
+contar com suporte nativo à construção de APIs e manipulação de bancos de dados 
+relacionais.
 
-1. Regras de Nomenclatura e Escopo
-A Lebre forca um padrao de escrita no codigo para garantir a padronizacao visual. A quebra dessas regras gera erro de compilacao/execucao.
-- Variaveis e Metodos: Devem iniciar com # seguido por camelCase (primeira minuscula).
-- Constantes: Devem iniciar com # seguido por SCREAM_SNAKE_CASE (tudo maiusculo com subtracos).
-- Classes: O nome da classe deve ser PascalCase (primeira maiuscula, sem #).
-- Escopo Global: Adicionar uma exclamacao ! ao final do nome da variavel antes do ponto e virgula a torna global.
+Os arquivos de script da linguagem utilizam a extensão .leb.
 
-2. Declaracao de Variaveis e Constantes
-Utilize as palavras-chave var e cons seguidas do tipo de dado e do identificador.
+--------------------------------------------------------------------------------
+ CARACTERISTICAS PRINCIPAIS
+--------------------------------------------------------------------------------
+* Motor Próprio em C: Arquitetura limpa e rápida com analisadores léxico, 
+  sintático, semântico (tipagem forte) e executor em tempo real.
+* Rastreamento de Erros Inteligente: Identificação exata do nome do arquivo e 
+  número da linha em caso de falhas durante a execução, facilitando o debug.
+* Convenções Rigorosas: Padrões visuais estritos garantidos por regras de 
+  nomenclatura obrigatórias em nível de compilação para variáveis, constantes 
+  e classes.
+* Orientação a Objetos Nativa: Suporte a encapsulamento, classes abstratas, 
+  herança e execução de construtores em cascata.
+* Servidor HTTP e Sockets Nativos: Capacidade de subir servidores web, escutar 
+  portas, receber requisições e enviar respostas (com suporte a CORS e JSON) 
+  utilizando apenas os sockets do SO.
+* Integração com Banco de Dados: Conexão nativa via protocolo TCP com MySQL 
+  utilizando arquivos de configuração externos.
+* Multiplataforma: Suporte total e otimizado para macOS e Windows.
 
-var int #idade = 53;
-var texto #nomeUsuario = "Marcio";
-cons decimal #TAXA_JUROS = 1.5;
-var int #contadorAcessos! = 0; // Global
+--------------------------------------------------------------------------------
+ COMPILACAO E EXECUCAO
+--------------------------------------------------------------------------------
+O motor da Lebre é compilado diretamente a partir dos arquivos fonte em C. 
+No diretório raiz, execute:
 
-3. Tipos de Dados Suportados
-- int: Numeros inteiros (ex: 10, -5).
-- decimal: Numeros de ponto flutuante (ex: 15.75).
-- texto: Cadeias de caracteres (ex: "Ola Mundo").
-- booleano: Valores logicos (VERDADEIRO ou FALSO).
-- lista: Arrays tipados dinamicos.
-- data: Formatacao em tempo real de data e hora local.
+[No macOS]
+clang *.c -o lebre -lreadline
 
-4. Operadores
-Matematicos:
-- Soma/Concatenacao: +
-- Subtracao: -
-- Multiplicacao: *
-- Divisao: /
-- Modulo (Resto): %
-- Potencia: ^ (ex: 2 ^ 3)
-- Raiz: $ (ex: 9 $ 2)
-- Incremento e Decremento: ++, --
+[No Windows (via MinGW64)]
+mingw64\bin\gcc.exe *.c -o lebre.exe -lws2_32
 
-Relacionais e Logicos:
-- Comparacao: ==, !=, >, <, >=, <=
-- Identico: ===
-- Logicos: E, OU, NAO
+[Rodando a Linguagem]
+* Terminal Interativo (REPL): Digite ./lebre (macOS) ou lebre.exe (Windows).
+* Executando um Script: Digite ./lebre script.leb.
 
-5. Estruturas de Controle e Repeticao
-Condicionais (se / senao se / senao):
+Dica: Ao modularizar sua API em subpastas, entre na pasta e chame o executável 
+do diretório pai para manter a integridade dos caminhos. Exemplo:
+cd api
+../lebre api.leb
+
+--------------------------------------------------------------------------------
+ 1. REGRAS DE NOMENCLATURA E ESCOPO
+--------------------------------------------------------------------------------
+A Lebre força um padrão estrito de escrita. A quebra dessas regras gera erro:
+* Variáveis e Métodos: Iniciam com # seguido por camelCase. 
+  Ex: #idade, #nomeUsuario.
+* Constantes: Iniciam com # seguido por SCREAM_SNAKE_CASE. 
+  Ex: #TAXA_JUROS.
+* Classes: Escritas em PascalCase (sem o prefixo #). 
+  Ex: Escola.
+* Escopo Global: Utiliza-se o sufixo ! antes do ponto e vírgula. 
+  Ex: #contadorAcessos!.
+
+--------------------------------------------------------------------------------
+ 2. TIPOS DE DADOS SUPORTADOS
+--------------------------------------------------------------------------------
+* int: Números inteiros (ex: 10, -5).
+* decimal: Números de ponto flutuante (ex: 15.75).
+* texto: Cadeias de caracteres entre aspas duplas (ex: "Ola Mundo").
+* booleano: Valores lógicos (VERDADEIRO ou FALSO).
+* lista: Arrays dinâmicos gerenciados automaticamente.
+* data: Tipo especial para formatação e manipulação temporal.
+* Objeto: Instâncias de classes estruturadas.
+
+--------------------------------------------------------------------------------
+ 3. DECLARACAO DE VARIAVEIS E CONSTANTES
+--------------------------------------------------------------------------------
+var int #idade = 53
+var texto #nomeUsuario = "Marcio"
+cons decimal #TAXA_JUROS = 1.5
+var int #contadorAcessos! = 0
+
+--------------------------------------------------------------------------------
+ 4. OPERADORES
+--------------------------------------------------------------------------------
+* Matemáticos: + (Soma/Concatenação), - (Subtração), * (Multiplicação), 
+  / (Divisão), % (Módulo), ^ (Potência), ~ (Raiz).
+* Incremento/Decremento: ++, --
+* Relacionais: == (Igual), === (Idêntico), != (Diferente), >, <, >=, <=
+* Lógicos: e (AND), ou (OR)
+* Ternário: ? : (Ex: #idade >= 18 ? "Maior" : "Menor")
+* Acesso a Objetos: -> (Operador de seta para acessar propriedades e métodos)
+
+--------------------------------------------------------------------------------
+ 5. ESTRUTURAS DE CONTROLE E REPETICAO
+--------------------------------------------------------------------------------
+[Condicionais (se / senao se / senao)]
+var int #nota = 8
 se (#nota >= 7) {
-    mostrar("Aprovado");
+    mostrar("Aprovado")
+} senao se (#nota >= 5) {
+    mostrar("Recuperacao")
 } senao {
-    mostrar("Reprovado");
+    mostrar("Reprovado")
 }
 
-Laco Fixo (linha):
+[Laço Fixo (linha) e Condicional (enquanto)]
 linha (var int #i = 0; #i < 10; #i++) {
-    mostrar(#i);
+    mostrar(#i)
 }
 
-Laco por Condicao (enquanto):
-var int #x = 0;
+var int #x = 0
 enquanto (#x < 5) {
-    #x++;
+    mostrar(#x)
+    #x++
 }
 
-6. Listas (Arrays)
-Declaracao e Laco (linhas):
-var lista(texto) #alunos = ("Ana", "Beto", "Carlos");
+--------------------------------------------------------------------------------
+ 6. LISTAS (ARRAYS)
+--------------------------------------------------------------------------------
+var lista #alunos
+adicionar(#alunos, "Ana")
+adicionar(#alunos, "Beto")
+adicionar(#alunos, "Carlos")
+
 linhas (var texto #aluno : #alunos) {
-    mostrar(#aluno);
+    mostrar(#aluno)
 }
 
-Manipulacao:
-#alunos[0] = "Ana Maria";
-adicionar(#alunos, "Daniel");
-remover(#alunos, 1);
-ordenar(#alunos);
+#alunos[0] = "Ana Maria"
+remover(#alunos, 1)
+ordenar(#alunos)
 
-7. Funcoes Nativas do Sistema
-- mostrar(valor)
-- carregar()
-- paraInt(valor), paraDecimal(valor), paraTexto(valor)
-- aleatorio(min, max)
-- media(), soma(), maximo(), minimo(), contar()
-- dividir(texto, separador)
+--------------------------------------------------------------------------------
+ 7. ORIENTACAO A OBJETOS
+--------------------------------------------------------------------------------
+classe abstrata Animal {
+    protegido texto #nome
 
-8. Funcoes de Usuario
-funcao #calcularDobro(int #valor) {
-    var int #resultado = #valor * 2;
-    retorna #resultado;
+    publico funcao construtor(var texto #n) {
+        #nome = #n
+    }
 }
 
-9. Leitura, Escrita e Modularizacao
-salvarArquivo("relatorio.txt", "Dados exportados com sucesso!");
-var texto #conteudo = lerArquivo("relatorio.txt");
-incluir "biblioteca_matematica.leb";
+classe Cachorro estende Animal {
+    publico funcao latir() {
+        mostrar(#nome + " diz: Au au!")
+    }
+}
+
+var Objeto #meuPet = novo Cachorro("Rex")
+#meuPet->latir()
+
+--------------------------------------------------------------------------------
+ 8. FUNCOES DE USUARIO
+--------------------------------------------------------------------------------
+funcao calcularDobro(var int #valor) {
+    var int #resultado = #valor * 2
+    retorna #resultado
+}
+
+var int #total = calcularDobro(15)
+mostrar(#total)
+
+--------------------------------------------------------------------------------
+ 9. FUNCOES NATIVAS DO SISTEMA
+--------------------------------------------------------------------------------
+mostrar(#var)          - Imprime o valor no terminal.
+carregar()             - Lê uma entrada de texto do teclado via terminal.
+aleatorio(#min, #max)  - Retorna um número inteiro randômico entre os limites.
+dividir(#txt, #sep)    - Divide um texto e retorna uma lista baseada no separador.
+paraInt(#var)          - Converte o valor para inteiro.
+paraDecimal(#var)      - Converte o valor para decimal.
+paraTexto(#var)        - Converte o valor para texto.
+arred(#var, #casas)    - Arredondamento matemático padrão.
+teto(#var, #casas)     - Arredondamento forçado para cima.
+piso(#var, #casas)     - Arredondamento forçado para baixo.
+ordenar(#lista)        - Ordena uma lista alfabeticamente ou numericamente.
+media(#val1, ...)      - Calcula a média de argumentos ou de uma lista.
+soma(#val1, ...)       - Soma argumentos ou os valores de uma lista.
+maximo(#val1, ...)     - Retorna o maior valor.
+minimo(#val1, ...)     - Retorna o menor valor.
+contar(#var)           - Retorna a qtde de itens (lista) ou caracteres (texto).
+
+--------------------------------------------------------------------------------
+ 10. LEITURA, ESCRITA E MODULARIZACAO
+--------------------------------------------------------------------------------
+salvarArquivo("relatorio.txt", "Dados exportados com sucesso!")
+var texto #conteudo = lerArquivo("relatorio.txt")
+
+incluir "biblioteca_matematica.leb"
+
+--------------------------------------------------------------------------------
+ 11. SERVIDOR WEB NATIVO, API E BANCO DE DADOS
+--------------------------------------------------------------------------------
+A Lebre expõe as funções iniciarServidor, receberRequisicao, enviarResposta e 
+mysqlConsultar para criar backends inteiros usando Arquitetura MVC modularizada.
+
+[api.leb]
+incluir "controller.leb"
+iniciarServidor(8000)
+enquanto (verdadeiro) {
+    processarRotas()
+}
+
+[controller.leb]
+incluir "model.leb"
+funcao processarRotas() {
+    var texto #req = receberRequisicao()
+    var texto #json = mysqlConsultar("SELECT * FROM " + #TABELA_USUARIOS)
+    enviarResposta(#json)
+}
+
+[model.leb]
+cons texto #TABELA_USUARIOS = "usuarios"
+
+--------------------------------------------------------------------------------
+ LICENCA
+--------------------------------------------------------------------------------
+Este projeto é distribuído sob a Licença GPL, destinado exclusivamente para 
+fins educacionais e acadêmicos.

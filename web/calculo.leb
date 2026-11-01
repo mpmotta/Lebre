@@ -28,6 +28,7 @@ enquanto (verdadeiro) {
             remover(#dados, #indicePessoas);
             #soma = paraDecimal(soma(#dados));
             #total = #soma / #pessoas;
+            #total = arred(#total, 2);
             
             #resposta = "Total da conta: R$ " + #soma + " | Valor por pessoa: R$ " + #total;
             enviarResposta(#resposta);

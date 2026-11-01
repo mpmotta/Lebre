@@ -1,0 +1,10 @@
+var int #idade;
+var texto #status;
+
+#idade = 20;
+#status = #idade >= 18 ? "Maior de idade" : "Menor de idade";
+mostrar(#status);
+
+#idade = 15;
+#status = #idade >= 18 ? "Maior de idade" : "Menor de idade";
+mostrar(#status);

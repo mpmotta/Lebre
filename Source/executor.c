@@ -1,5 +1,14 @@
 #include "lebre.h"
 
+int run_linha_atual = 1;
+char run_arquivo_atual[64] = "principal.leb";
+
+void lancar_erro_rastreado(const char* msg) {
+    char erro_formatado[512];
+    sprintf(erro_formatado, "%s (Arquivo: %s, Linha: %d)", msg, run_arquivo_atual, run_linha_atual);
+    lancar_erro(erro_formatado);
+}
+
 void formatar_data(char* dest, const char* fmt) {
     time_t t = time(NULL); struct tm *tm_info = localtime(&t);
     char buffer[256] = "", temp[32]; const char* p = fmt;
@@ -37,7 +46,7 @@ Ambiente* instanciar_classe(ASTNode* classe_def, Ambiente* env) {
         if (p_val.type != VAL_CLASSE) {
             char msg[256];
             sprintf(msg, "Classe pai invalida ou nao encontrada: %s", classe_def->parent_name);
-            lancar_erro(msg);
+            lancar_erro_rastreado(msg);
         }
         p_env = instanciar_classe(p_val.data.classe_def, env);
     }
@@ -53,8 +62,24 @@ Ambiente* instanciar_classe(ASTNode* classe_def, Ambiente* env) {
 }
 
 LebreValue avalia_expressao(ASTNode* node, Ambiente* env) {
+    if (node) {
+        run_linha_atual = node->numero_linha;
+        strcpy(run_arquivo_atual, node->arquivo);
+    }
+
     LebreValue val; val.type = VAL_INT; val.data.i = 0;
     if (!node) return val;
+    
+    if (node->type == AST_TERNARIO) {
+        LebreValue cond = avalia_expressao(node->cond, env);
+        int verdadeiro = (cond.type == VAL_BOOL) ? cond.data.b : (cond.type == VAL_DEC ? (cond.data.d != 0) : (cond.data.i != 0));
+        if (verdadeiro) {
+            return avalia_expressao(node->left, env);
+        } else {
+            return avalia_expressao(node->right, env);
+        }
+    }
+    
     if (node->type == AST_LITERAL) {
         if (node->op == T_NUM_INT) { val.type = VAL_INT; val.data.i = atoi(node->name); }
         else if (node->op == T_NUM_DEC) { val.type = VAL_DEC; val.data.d = texto_para_decimal(node->name); }
@@ -68,14 +93,14 @@ LebreValue avalia_expressao(ASTNode* node, Ambiente* env) {
     if (node->type == AST_INSTANCIA) {
         LebreValue classe_val = get_var(env, node->name);
         if (classe_val.type != VAL_CLASSE) {
-            lancar_erro("Identificador nao e uma classe valida");
+            lancar_erro_rastreado("Identificador nao e uma classe valida");
         }
         ASTNode* classe_def = classe_val.data.classe_def;
         
         if (classe_def->is_abstract) {
             char msg[256];
             sprintf(msg, "Nao e possivel instanciar a classe abstrata '%s'", classe_def->name);
-            lancar_erro(msg);
+            lancar_erro_rastreado(msg);
         }
         
         Ambiente* obj_env = instanciar_classe(classe_def, env);
@@ -128,18 +153,18 @@ LebreValue avalia_expressao(ASTNode* node, Ambiente* env) {
     if (node->type == AST_PROPRIEDADE_ACESSO) {
         LebreValue objeto = get_var(env, node->name);
         if (objeto.type != VAL_OBJETO) {
-            lancar_erro("Tentativa de acessar propriedade de algo que nao e objeto");
+            lancar_erro_rastreado("Tentativa de acessar propriedade de algo que nao e objeto");
         }
         Variavel* prop = buscar_variavel(objeto.data.obj_env, node->prop_name);
         if (!prop) {
             char msg[256];
             sprintf(msg, "Propriedade %s nao encontrada", node->prop_name);
-            lancar_erro(msg);
+            lancar_erro_rastreado(msg);
         }
         if (prop->visibilidade == T_PRIVADO || prop->visibilidade == T_PROTEGIDO) {
             char msg[256];
             sprintf(msg, "Acesso negado: a propriedade %s e privada ou protegida", node->prop_name);
-            lancar_erro(msg);
+            lancar_erro_rastreado(msg);
         }
         return prop->val;
     }
@@ -147,23 +172,23 @@ LebreValue avalia_expressao(ASTNode* node, Ambiente* env) {
     if (node->type == AST_METODO_CHAMADA) {
         LebreValue objeto = get_var(env, node->name);
         if (objeto.type != VAL_OBJETO) {
-            lancar_erro("Tentativa de chamar metodo de algo que nao e objeto");
+            lancar_erro_rastreado("Tentativa de chamar metodo de algo que nao e objeto");
         }
         Variavel* prop = buscar_variavel(objeto.data.obj_env, node->prop_name);
         if (!prop) {
             char msg[256];
             sprintf(msg, "Metodo %s nao encontrado", node->prop_name);
-            lancar_erro(msg);
+            lancar_erro_rastreado(msg);
         }
         if (prop->visibilidade == T_PRIVADO || prop->visibilidade == T_PROTEGIDO) {
             char msg[256];
             sprintf(msg, "Acesso negado: o metodo %s e privado ou protegido", node->prop_name);
-            lancar_erro(msg);
+            lancar_erro_rastreado(msg);
         }
         
         LebreValue func = prop->val;
         if (func.type != VAL_FUNCAO) {
-            lancar_erro("Tentativa de chamar algo que nao e metodo");
+            lancar_erro_rastreado("Tentativa de chamar algo que nao e metodo");
         }
         
         Ambiente* func_env = malloc(sizeof(Ambiente));
@@ -186,7 +211,7 @@ LebreValue avalia_expressao(ASTNode* node, Ambiente* env) {
         if (lista.type == VAL_LISTA && idx.type == VAL_INT && idx.data.i >= 0 && idx.data.i < lista.data.l.tamanho) {
             return lista.data.l.itens[idx.data.i];
         }
-        lancar_erro("Indice de lista fora dos limites");
+        lancar_erro_rastreado("Indice de lista fora dos limites");
         return val;
     }
     if (node->type == AST_CHAMADA_USER_FUNC) {
@@ -197,7 +222,7 @@ LebreValue avalia_expressao(ASTNode* node, Ambiente* env) {
         }
         
         if (func.type != VAL_FUNCAO) {
-            lancar_erro("Tentativa de chamar algo que nao e uma funcao");
+            lancar_erro_rastreado("Tentativa de chamar algo que nao e uma funcao");
         }
         Ambiente* func_env = malloc(sizeof(Ambiente));
         func_env->count = 0; func_env->pai = &ambiente_global;
@@ -260,6 +285,32 @@ LebreValue avalia_expressao(ASTNode* node, Ambiente* env) {
             if (node->op == T_PARA_TEXTO) {
                 char b[64]; if (a.type == VAL_INT) sprintf(b, "%d", a.data.i); else if (a.type == VAL_DEC) sprintf(b, "%g", a.data.d); else strcpy(b, a.data.s);
                 val.type = VAL_TEXTO; val.data.s = strdup(b);
+            }
+            return val;
+        }
+        if (node->op == T_ARRED || node->op == T_TETO || node->op == T_PISO) {
+            if (node->arg_count < 2) {
+                lancar_erro_rastreado("Funcao matematica requer 2 parametros: valor e casas decimais");
+            }
+            LebreValue arg_val = avalia_expressao(node->args[0], env);
+            LebreValue arg_casas = avalia_expressao(node->args[1], env);
+            
+            double num = (arg_val.type == VAL_DEC) ? arg_val.data.d : (arg_val.type == VAL_TEXTO ? texto_para_decimal(arg_val.data.s) : (double)arg_val.data.i);
+            int casas = (arg_casas.type == VAL_DEC) ? (int)arg_casas.data.d : arg_casas.data.i;
+            
+            double fator = pow(10, casas);
+            double res = 0;
+            
+            if (node->op == T_ARRED) res = round(num * fator) / fator;
+            else if (node->op == T_TETO) res = ceil(num * fator) / fator;
+            else if (node->op == T_PISO) res = floor(num * fator) / fator;
+            
+            if (casas == 0) {
+                val.type = VAL_INT;
+                val.data.i = (int)res;
+            } else {
+                val.type = VAL_DEC;
+                val.data.d = res;
             }
             return val;
         }
@@ -361,7 +412,7 @@ LebreValue avalia_expressao(ASTNode* node, Ambiente* env) {
         }
         else if (node->op == T_DIVISAO) {
             double divisor = (r.type==VAL_DEC?r.data.d:r.data.i);
-            if (divisor == 0) { lancar_erro("Divisao por zero"); }
+            if (divisor == 0) { lancar_erro_rastreado("Divisao por zero"); }
             if (l.type == VAL_DEC || r.type == VAL_DEC) {
                 val.type = VAL_DEC; val.data.d = (l.type==VAL_DEC?l.data.d:l.data.i) / divisor;
                 return val;
@@ -374,13 +425,13 @@ LebreValue avalia_expressao(ASTNode* node, Ambiente* env) {
         }
         else if (node->op == T_MODULO) {
             int divisor = (r.type==VAL_DEC?(int)r.data.d:r.data.i);
-            if (divisor == 0) { lancar_erro("Divisao por zero"); }
+            if (divisor == 0) { lancar_erro_rastreado("Divisao por zero"); }
             val.type = VAL_INT; val.data.i = (l.type==VAL_DEC?(int)l.data.d:l.data.i) % divisor; return val;
         }
         else if (node->op == T_POTENCIA) {
             double base = (l.type==VAL_DEC?l.data.d:l.data.i);
             double exp = (r.type==VAL_DEC?r.data.d:r.data.i);
-            if (base == 0 && exp < 0) { lancar_erro("Zero elevado a expoente negativo"); }
+            if (base == 0 && exp < 0) { lancar_erro_rastreado("Zero elevado a expoente negativo"); }
             if (exp < 0 || l.type == VAL_DEC || r.type == VAL_DEC) {
                 val.type = VAL_DEC; val.data.d = pow(base, exp);
                 return val;
@@ -390,8 +441,8 @@ LebreValue avalia_expressao(ASTNode* node, Ambiente* env) {
         else if (node->op == T_RAIZ) {
             double base = (l.type==VAL_DEC?l.data.d:l.data.i);
             double root = (r.type==VAL_DEC?r.data.d:r.data.i);
-            if (base < 0) { lancar_erro("Raiz de numero negativo"); }
-            if (root == 0) { lancar_erro("Divisao por zero na raiz"); }
+            if (base < 0) { lancar_erro_rastreado("Raiz de numero negativo"); }
+            if (root == 0) { lancar_erro_rastreado("Divisao por zero na raiz"); }
             double res = pow(base, 1.0/root);
             if (l.type == VAL_DEC || r.type == VAL_DEC || floor(res) != res) {
                 val.type = VAL_DEC; val.data.d = res;
@@ -435,6 +486,10 @@ LebreValue avalia_expressao(ASTNode* node, Ambiente* env) {
 
 void executa(ASTNode* node, Ambiente* env) {
     if (!node || flag_return) return;
+    
+    run_linha_atual = node->numero_linha;
+    strcpy(run_arquivo_atual, node->arquivo);
+
     if (node->type == AST_PROGRAMA || node->type == AST_BLOCO) {
         for (int i = 0; i < node->arg_count; i++) { executa(node->args[i], env); if (flag_return) break; }
     }
@@ -488,10 +543,14 @@ void executa(ASTNode* node, Ambiente* env) {
         if (f) {
             fseek(f, 0, SEEK_END); long l = ftell(f); fseek(f, 0, SEEK_SET);
             char* b = malloc(l + 1); fread(b, 1, l, f); b[l] = '\0'; fclose(f);
+            char temp_lex[64];
+            strcpy(temp_lex, arquivo_lex_atual);
+            strcpy(arquivo_lex_atual, node->name);
             Token* tks = malloc(sizeof(Token) * 10000); lex(b, tks);
+            strcpy(arquivo_lex_atual, temp_lex);
             ASTNode* inc_root = parse(tks); executa(inc_root, env);
             free(tks); free(b);
-        } else { char msg[256]; sprintf(msg, "Arquivo %s nao encontrado", node->name); lancar_erro(msg); }
+        } else { char msg[256]; sprintf(msg, "Arquivo %s nao encontrado", node->name); lancar_erro_rastreado(msg); }
     }
     else if (node->type == AST_ADICIONAR) {
         LebreValue lista = get_var(env, node->name);
@@ -561,13 +620,13 @@ void executa(ASTNode* node, Ambiente* env) {
     else if (node->type == AST_PROPRIEDADE_ATRIBUICAO) {
         LebreValue objeto = get_var(env, node->name);
         if (objeto.type != VAL_OBJETO) {
-            lancar_erro("Tentativa de atribuir propriedade a algo que nao e objeto");
+            lancar_erro_rastreado("Tentativa de atribuir propriedade a algo que nao e objeto");
         }
         Variavel* prop = buscar_variavel(objeto.data.obj_env, node->prop_name);
         if (prop && (prop->visibilidade == T_PRIVADO || prop->visibilidade == T_PROTEGIDO)) {
             char msg[256];
             sprintf(msg, "Acesso negado: a propriedade %s e privada ou protegida", node->prop_name);
-            lancar_erro(msg);
+            lancar_erro_rastreado(msg);
         }
         set_var(objeto.data.obj_env, node->prop_name, avalia_expressao(node->right, env), 0, 0, T_PUBLICO);
     }

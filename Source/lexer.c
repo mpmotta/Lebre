@@ -1,5 +1,7 @@
 #include "lebre.h"
 
+char arquivo_lex_atual[64] = "principal.leb";
+
 int eh_scream_snake(const char* str) {
     if (str[0] != '#') return 0;
     for (int i = 1; str[i] != '\0'; i++) {
@@ -13,6 +15,7 @@ int eh_scream_snake(const char* str) {
 
 void lex(const char* src, Token* tokens) {
     int i = 0, t = 0;
+    int linha = 1;
 
     if ((unsigned char)src[0] == 0xEF && (unsigned char)src[1] == 0xBB && (unsigned char)src[2] == 0xBF) {
         i += 3;
@@ -20,6 +23,7 @@ void lex(const char* src, Token* tokens) {
 
     while (src[i] != '\0') {
         if (isspace((unsigned char)src[i])) {
+            if (src[i] == '\n') linha++;
             i++;
             continue;
         }
@@ -29,14 +33,22 @@ void lex(const char* src, Token* tokens) {
         }
         if (src[i] == '/' && src[i+1] == '*') {
             i += 2;
-            while (src[i] != '\0' && !(src[i] == '*' && src[i+1] == '/')) i++;
+            while (src[i] != '\0' && !(src[i] == '*' && src[i+1] == '/')) {
+                if (src[i] == '\n') linha++;
+                i++;
+            }
             if (src[i] != '\0') i += 2;
             continue;
         }
+        
+        tokens[t].numero_linha = linha;
+        strcpy(tokens[t].arquivo, arquivo_lex_atual);
+        
         if (src[i] == '"') {
             i++;
             int k = 0;
             while (src[i] != '\0' && src[i] != '"') {
+                if (src[i] == '\n') linha++;
                 if (src[i] == '\\' && src[i+1] != '\0') {
                     i++;
                     if (src[i] == 'n') tokens[t].value[k++] = '\n';
@@ -130,6 +142,9 @@ void lex(const char* src, Token* tokens) {
             else if (strcmp(v, "maximo") == 0) tokens[t].type = T_MAXIMO;
             else if (strcmp(v, "minimo") == 0) tokens[t].type = T_MINIMO;
             else if (strcmp(v, "contar") == 0) tokens[t].type = T_CONTAR;
+            else if (strcmp(v, "arred") == 0) tokens[t].type = T_ARRED;
+            else if (strcmp(v, "teto") == 0) tokens[t].type = T_TETO;
+            else if (strcmp(v, "piso") == 0) tokens[t].type = T_PISO;
             else if (strcmp(v, "e") == 0) tokens[t].type = T_E;
             else if (strcmp(v, "ou") == 0) tokens[t].type = T_OU;
             else tokens[t].type = T_IDENTIFICADOR;
@@ -174,9 +189,12 @@ void lex(const char* src, Token* tokens) {
             case ',': tokens[t++].type = T_VIRGULA; break;
             case ':': tokens[t++].type = T_DOIS_PONTOS; break;
             case '.': tokens[t++].type = T_PONTO; break;
+            case '?': tokens[t++].type = T_INTERROGACAO; break;
             default: tokens[t++].type = T_DESCONHECIDO; break;
         }
     }
+    tokens[t].numero_linha = linha;
+    strcpy(tokens[t].arquivo, arquivo_lex_atual);
     tokens[t].type = T_FIM;
     strcpy(tokens[t].value, "");
 }

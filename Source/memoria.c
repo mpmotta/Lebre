@@ -20,7 +20,7 @@ LebreValue get_var(Ambiente* env, const char* name) {
     }
     char msg[256];
     sprintf(msg, "%s nao encontrada", name);
-    lancar_erro(msg);
+    lancar_erro_rastreado(msg);
     LebreValue v; v.type = VAL_INT; v.data.i = 0;
     return v;
 }
@@ -33,12 +33,12 @@ void set_var(Ambiente* env, const char* name, LebreValue val, int is_const, int 
         if (var->is_const) {
             char msg[256];
             sprintf(msg, "Nao e permitido alterar a constante %s", name);
-            lancar_erro(msg);
+            lancar_erro_rastreado(msg);
         }
         if (var->val.type != val.type && var->val.type != VAL_FUNCAO && var->val.type != VAL_CLASSE && var->val.type != VAL_OBJETO) {
             char msg[256];
             sprintf(msg, "Erro de tipagem na atribuicao da variavel %s", name);
-            lancar_erro(msg);
+            lancar_erro_rastreado(msg);
         }
         var->val = val;
         return;

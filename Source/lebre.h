@@ -20,18 +20,21 @@ typedef enum {
     T_LER_ARQUIVO, T_SALVAR_ARQUIVO, T_ALEATORIO, T_DIVIDIR,
     T_PARA_INT, T_PARA_DECIMAL, T_PARA_TEXTO,
     T_MEDIA, T_SOMA, T_MAXIMO, T_MINIMO, T_CONTAR,
+    T_ARRED, T_TETO, T_PISO,
     T_IDENTIFICADOR, T_SCREAM_SNAKE,
     T_NUM_INT, T_NUM_DEC, T_STRING,
     T_ATRIBUICAO, T_SOMA_OP, T_SUBTRACAO, T_MULTIPLICACAO, T_DIVISAO, T_MODULO, T_POTENCIA, T_RAIZ,
     T_IGUAL, T_IDENTICO, T_DIFERENTE, T_MAIOR, T_MENOR, T_MAIOR_IGUAL, T_MENOR_IGUAL,
     T_E, T_OU, T_INCREMENTO, T_DECREMENTO, T_SETA,
     T_ABRE_PAR, T_FECHA_PAR, T_ABRE_CHAVE, T_FECHA_CHAVE, T_ABRE_COL, T_FECHA_COL,
-    T_PONTO_VIRGULA, T_VIRGULA, T_DOIS_PONTOS, T_PONTO
+    T_PONTO_VIRGULA, T_VIRGULA, T_DOIS_PONTOS, T_PONTO, T_INTERROGACAO
 } TokenType;
 
 typedef struct {
     TokenType type;
     char value[256];
+    int numero_linha;
+    char arquivo[64];
 } Token;
 
 typedef enum {
@@ -42,7 +45,7 @@ typedef enum {
     AST_MOSTRAR, AST_SE, AST_ENQUANTO, AST_LINHA, AST_LINHAS,
     AST_FUNCAO_DEF, AST_CHAMADA_USER_FUNC, AST_CHAMADA_NATIVA, AST_RETORNA,
     AST_ADICIONAR, AST_REMOVER, AST_INCLUIR, AST_SALVAR_ARQUIVO, AST_DATA_DEF,
-    AST_BINARIO, AST_LITERAL, AST_VARIAVEL,
+    AST_BINARIO, AST_TERNARIO, AST_LITERAL, AST_VARIAVEL,
     AST_CLASSE_DEF, AST_INSTANCIA, AST_PROPRIEDADE_ACESSO, AST_PROPRIEDADE_ATRIBUICAO, AST_METODO_CHAMADA
 } ASTNodeType;
 
@@ -52,6 +55,8 @@ typedef struct ASTNode {
     TokenType var_type;
     TokenType visibilidade;
     int is_abstract;
+    int numero_linha;
+    char arquivo[64];
     char name[128];
     char prop_name[128];
     char parent_name[128];
@@ -107,7 +112,12 @@ extern Ambiente ambiente_global;
 extern LebreValue global_return_val;
 extern int flag_return;
 
+extern int run_linha_atual;
+extern char run_arquivo_atual[64];
+extern char arquivo_lex_atual[64];
+
 void lancar_erro(const char* msg);
+void lancar_erro_rastreado(const char* msg);
 void lex(const char* src, Token* tokens);
 ASTNode* parse(Token* tokens);
 void analisar_semantica(ASTNode* root);

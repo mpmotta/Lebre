@@ -9,6 +9,15 @@ ASTNode* create_node(ASTNodeType type) {
     node->var_type = T_FIM;
     node->visibilidade = T_PUBLICO;
     node->is_abstract = 0;
+    
+    if (tkns) {
+        node->numero_linha = tkns[pos].numero_linha;
+        strcpy(node->arquivo, tkns[pos].arquivo);
+    } else {
+        node->numero_linha = 1;
+        strcpy(node->arquivo, "desconhecido");
+    }
+
     node->name[0] = '\0';
     node->prop_name[0] = '\0';
     node->parent_name[0] = '\0';
@@ -23,7 +32,7 @@ void exigir_ponto_virgula() {
         pos++;
     } else {
         char msg[256];
-        sprintf(msg, "Faltou ponto e virgula no final da instrucao perto de '%s'", tkns[pos].value);
+        sprintf(msg, "Faltou ponto e virgula no final da instrucao perto de '%s' (Arquivo: %s, Linha: %d)", tkns[pos].value, tkns[pos].arquivo, tkns[pos].numero_linha);
         lancar_erro(msg);
     }
 }
@@ -136,7 +145,7 @@ ASTNode* parse_primary() {
         if (tkns[pos].type == T_FECHA_PAR) pos++;
         return node;
     }
-    if (tkns[pos].type == T_PARA_INT || tkns[pos].type == T_PARA_DECIMAL || tkns[pos].type == T_PARA_TEXTO || tkns[pos].type == T_ORDENAR || tkns[pos].type == T_LER_ARQUIVO || tkns[pos].type == T_ALEATORIO || tkns[pos].type == T_DIVIDIR || tkns[pos].type == T_MEDIA || tkns[pos].type == T_SOMA || tkns[pos].type == T_MAXIMO || tkns[pos].type == T_MINIMO || tkns[pos].type == T_CONTAR) {
+    if (tkns[pos].type == T_PARA_INT || tkns[pos].type == T_PARA_DECIMAL || tkns[pos].type == T_PARA_TEXTO || tkns[pos].type == T_ORDENAR || tkns[pos].type == T_LER_ARQUIVO || tkns[pos].type == T_ALEATORIO || tkns[pos].type == T_DIVIDIR || tkns[pos].type == T_MEDIA || tkns[pos].type == T_SOMA || tkns[pos].type == T_MAXIMO || tkns[pos].type == T_MINIMO || tkns[pos].type == T_CONTAR || tkns[pos].type == T_ARRED || tkns[pos].type == T_TETO || tkns[pos].type == T_PISO) {
         node->type = AST_CHAMADA_NATIVA; node->op = tkns[pos].type; pos++;
         if (tkns[pos].type == T_ABRE_PAR) pos++;
         while (tkns[pos].type != T_FECHA_PAR && tkns[pos].type != T_FIM) {
@@ -215,9 +224,9 @@ ASTNode* parse_primary() {
     
     char msg[300];
     if (tkns[pos].type == T_FIM) {
-        sprintf(msg, "Expressao incompleta");
+        sprintf(msg, "Expressao incompleta (Arquivo: %s, Linha: %d)", tkns[pos > 0 ? pos-1 : pos].arquivo, tkns[pos > 0 ? pos-1 : pos].numero_linha);
     } else {
-        sprintf(msg, "Expressao invalida perto de '%s'", tkns[pos].value);
+        sprintf(msg, "Expressao invalida perto de '%s' (Arquivo: %s, Linha: %d)", tkns[pos].value, tkns[pos].arquivo, tkns[pos].numero_linha);
     }
     lancar_erro(msg);
     return node;
@@ -238,7 +247,25 @@ ASTNode* parse_binop(ASTNode* left, int min_prec) {
     return left;
 }
 
-ASTNode* parse_expression() { return parse_binop(parse_primary(), 1); }
+ASTNode* parse_expression() { 
+    ASTNode* expr = parse_binop(parse_primary(), 1);
+    if (tkns[pos].type == T_INTERROGACAO) {
+        pos++;
+        ASTNode* node_ternario = create_node(AST_TERNARIO);
+        node_ternario->cond = expr;
+        node_ternario->left = parse_expression();
+        if (tkns[pos].type == T_DOIS_PONTOS) {
+            pos++;
+        } else {
+            char msg[256];
+            sprintf(msg, "Faltou ':' no operador ternario (Arquivo: %s, Linha: %d)", tkns[pos].arquivo, tkns[pos].numero_linha);
+            lancar_erro(msg);
+        }
+        node_ternario->right = parse_expression();
+        return node_ternario;
+    }
+    return expr;
+}
 
 ASTNode* parse_bloco() {
     ASTNode* bloco = create_node(AST_BLOCO);
@@ -444,7 +471,9 @@ ASTNode* parse_statement() {
             return node;
         }
         if (tkns[pos].type != T_IDENTIFICADOR && tkns[pos].type != T_SCREAM_SNAKE) {
-            lancar_erro("Nome de variavel ou constante invalido na declaracao");
+            char msg[256];
+            sprintf(msg, "Nome de variavel ou constante invalido na declaracao (Arquivo: %s, Linha: %d)", tkns[pos].arquivo, tkns[pos].numero_linha);
+            lancar_erro(msg);
         }
         node = create_node(is_const ? AST_CONSTANTE : AST_DECLARACAO);
         node->var_type = v_type;
@@ -464,6 +493,7 @@ ASTNode* parse_statement() {
         tkns[pos].type == T_ORDENAR || tkns[pos].type == T_LER_ARQUIVO || tkns[pos].type == T_ALEATORIO || 
         tkns[pos].type == T_DIVIDIR || tkns[pos].type == T_MEDIA || tkns[pos].type == T_SOMA || 
         tkns[pos].type == T_MAXIMO || tkns[pos].type == T_MINIMO || tkns[pos].type == T_CONTAR || 
+        tkns[pos].type == T_ARRED || tkns[pos].type == T_TETO || tkns[pos].type == T_PISO || 
         tkns[pos].type == T_CARREGAR) {
         
         ASTNode* expr = parse_expression();
@@ -524,7 +554,7 @@ ASTNode* parse_statement() {
         }
         
         char msg[300];
-        sprintf(msg, "Comando ou instrucao invalida: '%s'", temp_name);
+        sprintf(msg, "Comando ou instrucao invalida: '%s' (Arquivo: %s, Linha: %d)", temp_name, tkns[pos].arquivo, tkns[pos].numero_linha);
         lancar_erro(msg);
     }
     
@@ -538,7 +568,7 @@ ASTNode* parse_statement() {
     }
     
     char msg[300];
-    sprintf(msg, "Sintaxe invalida perto de '%s'", tkns[pos].value);
+    sprintf(msg, "Sintaxe invalida perto de '%s' (Arquivo: %s, Linha: %d)", tkns[pos].value, tkns[pos].arquivo, tkns[pos].numero_linha);
     lancar_erro(msg);
     return create_node(AST_VAZIO);
 }
