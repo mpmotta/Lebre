@@ -1,0 +1,160 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Lebre",
+  "scopeName": "source.lebre",
+  "patterns": [
+    {
+      "include": "#comments"
+    },
+    {
+      "include": "#strings"
+    },
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#storage"
+    },
+    {
+      "include": "#constants"
+    },
+    {
+      "include": "#variables"
+    },
+    {
+      "include": "#supportFunctions"
+    },
+    {
+      "include": "#numbers"
+    },
+    {
+      "include": "#operators"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "begin": "/\\*",
+          "end": "\\*/",
+          "name": "comment.block.lebre"
+        },
+        {
+          "match": "//.*$",
+          "name": "comment.line.double-slash.lebre"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "begin": "\"",
+          "end": "\"",
+          "name": "string.quoted.double.lebre",
+          "patterns": [
+            {
+              "match": "\\\\.",
+              "name": "constant.character.escape.lebre"
+            },
+            {
+              "match": "\\$\\{#[a-zA-Z0-9_]+\\}",
+              "name": "variable.interpolation.lebre"
+            }
+          ]
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "match": "\\b(se|senao|enquanto|linha|linhas|retorna|incluir|novo|estende)\\b",
+          "name": "keyword.control.lebre"
+        },
+        {
+          "match": "\\b(e|ou|VERDADEIRO|FALSO|verdadeiro|falso)\\b",
+          "name": "keyword.operator.logical.lebre"
+        }
+      ]
+    },
+    "storage": {
+      "patterns": [
+        {
+          "match": "\\b(var|cons|funcao|classe|abstrata)\\b",
+          "name": "storage.type.lebre"
+        },
+        {
+          "match": "\\b(int|decimal|texto|booleano|lista|data|Objeto)\\b",
+          "name": "storage.type.primitive.lebre"
+        },
+        {
+          "match": "\\b(publico|privado|protegido)\\b",
+          "name": "storage.modifier.lebre"
+        }
+      ]
+    },
+    "constants": {
+      "patterns": [
+        {
+          "match": "#[A-Z_][A-Z0-9_]*\\b",
+          "name": "constant.language.lebre"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "match": "#[a-zA-Z0-9_]+\\b",
+          "name": "variable.other.lebre"
+        }
+      ]
+    },
+    "supportFunctions": {
+      "patterns": [
+        {
+          "match": "\\b(mostrar|carregar|adicionar|remover|ordenar|lerArquivo|salvarArquivo|aleatorio|dividir|paraInt|paraDecimal|paraTexto|media|soma|maximo|minimo|contar|arred|teto|piso|iniciarServidor|receberRequisicao|enviarResposta|mysqlConsultar)\\b(?=\\s*\\()",
+          "name": "support.function.lebre"
+        },
+        {
+          "match": "\\b[a-zA-Z_][a-zA-Z0-9_]*\\b(?=\\s*\\()",
+          "name": "entity.name.function.lebre"
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "match": "\\b\\d+(\\.\\d+)?\\b",
+          "name": "constant.numeric.lebre"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "match": "===|==|!=|<=|>=|<|>",
+          "name": "keyword.operator.comparison.lebre"
+        },
+        {
+          "match": "\\+|-|\\*|/|%|\\^|~",
+          "name": "keyword.operator.arithmetic.lebre"
+        },
+        {
+          "match": "\\+\\+|--",
+          "name": "keyword.operator.increment.lebre"
+        },
+        {
+          "match": "=",
+          "name": "keyword.operator.assignment.lebre"
+        },
+        {
+          "match": "->",
+          "name": "keyword.operator.arrow.lebre"
+        },
+        {
+          "match": "\\?|:",
+          "name": "keyword.operator.ternary.lebre"
+        }
+      ]
+    }
+  }
+}

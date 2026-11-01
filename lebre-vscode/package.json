@@ -1,0 +1,34 @@
+{
+  "name": "lebre-lang",
+  "displayName": "Lebre Language Support",
+  "description": "Suporte de sintaxe para a linguagem Lebre",
+  "version": "1.0.0",
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [
+      {
+        "id": "lebre",
+        "aliases": [
+          "Lebre",
+          "lebre"
+        ],
+        "extensions": [
+          ".leb"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "lebre",
+        "scopeName": "source.lebre",
+        "path": "./syntaxes/lebre.tmLanguage.json"
+      }
+    ]
+  }
+}
