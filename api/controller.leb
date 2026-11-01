@@ -2,45 +2,45 @@ incluir "model.leb";
 
 funcao consultar() {
     Objeto #pessoaModel = novo Pessoa();
-    var texto #result = #pessoaModel.consulta();
+    var texto #result = #pessoaModel->consulta();
     retorna #result;
 }
 
 funcao consultaID(texto #id) {
     Objeto #pessoaModel = novo Pessoa();
-    var texto #result = #pessoaModel.consultaID(#id);
+    var texto #result = #pessoaModel->consultaID(#id);
     retorna #result;
 }
 
-funcao inserir(#pessoa) {
-    se (contar(#pessoa.#nome) == 0 || contar(#pessoa.#fone) == 0 || contar(#pessoa.#email) == 0) {
+funcao inserir(Objeto #pessoa) {
+    se (contar(#pessoa->getNome()) == 0 || contar(#pessoa->getFone()) == 0 || contar(#pessoa->getEmail()) == 0) {
         enviarResposta("erro: campo vazio");
     } senao {
         Objeto #pessoaModel = novo Pessoa();
-        #pessoaModel.#nome = #pessoa.#nome;
-        #pessoaModel.#fone = #pessoa.#fone;
-        #pessoaModel.#email = #pessoa.#email;
-        #pessoaModel.inserir();
+        #pessoaModel->setNome(#pessoa->getNome());
+        #pessoaModel->setFone(#pessoa->getFone());
+        #pessoaModel->setEmail(#pessoa->getEmail());
+        #pessoaModel->inserir();
         enviarResposta("[{\"status\":\"cadastro_ok\"}]");
     }
 }
 
-funcao editar(#pessoa, texto #id) {
-    se (contar(#pessoa.#nome) == 0 || contar(#pessoa.#fone) == 0 || contar(#pessoa.#email) == 0) {
+funcao editar(Objeto #pessoa, texto #id) {
+    se (contar(#pessoa->getNome()) == 0 || contar(#pessoa->getFone()) == 0 || contar(#pessoa->getEmail()) == 0) {
         enviarResposta("erro: campo vazio");
     } senao {
         Objeto #pessoaModel = novo Pessoa();
-        #pessoaModel.#nome = #pessoa.#nome;
-        #pessoaModel.#fone = #pessoa.#fone;
-        #pessoaModel.#email = #pessoa.#email;
-        #pessoaModel.editar(#id);
+        #pessoaModel->setNome(#pessoa->getNome());
+        #pessoaModel->setFone(#pessoa->getFone());
+        #pessoaModel->setEmail(#pessoa->getEmail());
+        #pessoaModel->editar(#id);
         enviarResposta("[{\"status\":\"edit_ok\"}]");
     }
 }
 
 funcao excluir(texto #id) {
     Objeto #pessoaModel = novo Pessoa();
-    #pessoaModel.excluir(#id);
+    #pessoaModel->excluir(#id);
     enviarResposta("[{\"status\":\"delete_ok\"}]");
 }
 
@@ -61,9 +61,9 @@ funcao handleRequest() {
                 excluir(#dados[1]);
             } senao se (#acao === "salvar") {
                 Objeto #pessoa = novo Pessoa();
-                #pessoa.#nome = #dados[2];
-                #pessoa.#fone = #dados[3];
-                #pessoa.#email = #dados[4];
+                #pessoa->setNome(#dados[2]);
+                #pessoa->setFone(#dados[3]);
+                #pessoa->setEmail(#dados[4]);
                 
                 se (#dados[1] === "0") {
                     inserir(#pessoa);

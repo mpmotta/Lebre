@@ -1,0 +1,40 @@
+iniciarServidor(8000);
+mostrar("Backend de calculo rodando em http://localhost:8000");
+
+enquanto (verdadeiro) {
+    var texto #req;
+    var lista #linhas;
+    var texto #corpo;
+    var lista #dados;
+    var int #qtdDados;
+
+    #req = receberRequisicao();
+    #linhas = dividir(#req, "\n");
+    #corpo = #linhas[contar(#linhas) - 1];
+    #dados = dividir(#corpo, "|");
+    #qtdDados = contar(#dados);
+
+    se (#qtdDados > 1) {
+        var int #indicePessoas;
+        var decimal #pessoas;
+        var decimal #soma;
+        var decimal #total;
+        var texto #resposta;
+
+        #indicePessoas = #qtdDados - 1;
+        #pessoas = paraDecimal(#dados[#indicePessoas]);
+        
+        se (#pessoas > 0) {
+            remover(#dados, #indicePessoas);
+            #soma = paraDecimal(soma(#dados));
+            #total = #soma / #pessoas;
+            
+            #resposta = "Total da conta: R$ " + #soma + " | Valor por pessoa: R$ " + #total;
+            enviarResposta(#resposta);
+        } senao {
+            enviarResposta("Erro: Numero de pessoas deve ser maior que zero.");
+        }
+    } senao {
+        enviarResposta("");
+    }
+}

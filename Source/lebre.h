@@ -11,7 +11,8 @@
 typedef enum {
     T_FIM, T_DESCONHECIDO,
     T_VAR, T_CONS, T_INT, T_DECIMAL, T_TEXTO, T_BOOLEANO, T_LISTA, T_DATA,
-    T_CLASSE, T_OBJETO, T_NOVO,
+    T_CLASSE, T_ABSTRATA, T_ESTENDE, T_OBJETO, T_NOVO,
+    T_PUBLICO, T_PRIVADO, T_PROTEGIDO,
     T_VERDADEIRO, T_FALSO,
     T_SE, T_SENAO, T_ENQUANTO, T_LINHA, T_LINHAS,
     T_FUNCAO, T_RETORNA, T_INCLUIR,
@@ -23,7 +24,7 @@ typedef enum {
     T_NUM_INT, T_NUM_DEC, T_STRING,
     T_ATRIBUICAO, T_SOMA_OP, T_SUBTRACAO, T_MULTIPLICACAO, T_DIVISAO, T_MODULO, T_POTENCIA, T_RAIZ,
     T_IGUAL, T_IDENTICO, T_DIFERENTE, T_MAIOR, T_MENOR, T_MAIOR_IGUAL, T_MENOR_IGUAL,
-    T_E, T_OU, T_INCREMENTO, T_DECREMENTO,
+    T_E, T_OU, T_INCREMENTO, T_DECREMENTO, T_SETA,
     T_ABRE_PAR, T_FECHA_PAR, T_ABRE_CHAVE, T_FECHA_CHAVE, T_ABRE_COL, T_FECHA_COL,
     T_PONTO_VIRGULA, T_VIRGULA, T_DOIS_PONTOS, T_PONTO
 } TokenType;
@@ -49,8 +50,11 @@ typedef struct ASTNode {
     ASTNodeType type;
     TokenType op;
     TokenType var_type;
+    TokenType visibilidade;
+    int is_abstract;
     char name[128];
     char prop_name[128];
+    char parent_name[128];
     struct ASTNode *left, *right, *cond, *body, *alt, *init, *step;
     struct ASTNode **args;
     int arg_count;
@@ -90,6 +94,7 @@ typedef struct {
     char name[128];
     LebreValue val;
     int is_const;
+    TokenType visibilidade;
 } Variavel;
 
 typedef struct Ambiente {
@@ -107,7 +112,8 @@ void lex(const char* src, Token* tokens);
 ASTNode* parse(Token* tokens);
 void analisar_semantica(ASTNode* root);
 LebreValue get_var(Ambiente* env, const char* name);
-void set_var(Ambiente* env, const char* name, LebreValue val, int is_const, int is_global);
+Variavel* buscar_variavel(Ambiente* env, const char* name);
+void set_var(Ambiente* env, const char* name, LebreValue val, int is_const, int is_global, TokenType visibilidade);
 LebreValue avalia_expressao(ASTNode* node, Ambiente* env);
 void executa(ASTNode* node, Ambiente* env);
 

@@ -88,11 +88,11 @@ LebreValue func_enviarResposta(Ambiente* env, ASTNode** args, int arg_count) {
 
 void registrar_modulo_http(Ambiente* env) {
     LebreValue v1; v1.type = VAL_FUNCAO_C; v1.data.func_c = func_iniciarServidor;
-    set_var(env, "iniciarServidor", v1, 1, 1);
+    set_var(env, "iniciarServidor", v1, 1, 1, T_PUBLICO);
     
     LebreValue v2; v2.type = VAL_FUNCAO_C; v2.data.func_c = func_receberRequisicao;
-    set_var(env, "receberRequisicao", v2, 1, 1);
+    set_var(env, "receberRequisicao", v2, 1, 1, T_PUBLICO);
     
     LebreValue v3; v3.type = VAL_FUNCAO_C; v3.data.func_c = func_enviarResposta;
-    set_var(env, "enviarResposta", v3, 1, 1);
+    set_var(env, "enviarResposta", v3, 1, 1, T_PUBLICO);
 }

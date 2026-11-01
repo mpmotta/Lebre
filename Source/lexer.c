@@ -96,6 +96,11 @@ void lex(const char* src, Token* tokens) {
             else if (strcmp(v, "lista") == 0) tokens[t].type = T_LISTA;
             else if (strcmp(v, "data") == 0) tokens[t].type = T_DATA;
             else if (strcmp(v, "classe") == 0) tokens[t].type = T_CLASSE;
+            else if (strcmp(v, "abstrata") == 0) tokens[t].type = T_ABSTRATA;
+            else if (strcmp(v, "estende") == 0) tokens[t].type = T_ESTENDE;
+            else if (strcmp(v, "publico") == 0) tokens[t].type = T_PUBLICO;
+            else if (strcmp(v, "privado") == 0) tokens[t].type = T_PRIVADO;
+            else if (strcmp(v, "protegido") == 0) tokens[t].type = T_PROTEGIDO;
             else if (strcmp(v, "Objeto") == 0) tokens[t].type = T_OBJETO;
             else if (strcmp(v, "novo") == 0) tokens[t].type = T_NOVO;
             else if (strcmp(v, "VERDADEIRO") == 0 || strcmp(v, "verdadeiro") == 0) tokens[t].type = T_VERDADEIRO;
@@ -137,6 +142,7 @@ void lex(const char* src, Token* tokens) {
         if (strncmp(&src[i], "!=", 2) == 0 || strncmp(&src[i], "<>", 2) == 0) { strcpy(tokens[t].value, "!="); tokens[t++].type = T_DIFERENTE; i += 2; continue; }
         if (strncmp(&src[i], ">=", 2) == 0) { strcpy(tokens[t].value, ">="); tokens[t++].type = T_MAIOR_IGUAL; i += 2; continue; }
         if (strncmp(&src[i], "<=", 2) == 0) { strcpy(tokens[t].value, "<="); tokens[t++].type = T_MENOR_IGUAL; i += 2; continue; }
+        if (strncmp(&src[i], "->", 2) == 0) { strcpy(tokens[t].value, "->"); tokens[t++].type = T_SETA; i += 2; continue; }
         if (strncmp(&src[i], "&&", 2) == 0) { strcpy(tokens[t].value, "&&"); tokens[t++].type = T_E; i += 2; continue; }
         if (strncmp(&src[i], "||", 2) == 0) { strcpy(tokens[t].value, "||"); tokens[t++].type = T_OU; i += 2; continue; }
         if (strncmp(&src[i], "++", 2) == 0) { strcpy(tokens[t].value, "++"); tokens[t++].type = T_INCREMENTO; i += 2; continue; }

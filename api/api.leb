@@ -1,4 +1,3 @@
-incluir "conexao.leb";
 incluir "controller.leb";
 
 iniciarServidor(8000);

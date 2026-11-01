@@ -1,31 +1,49 @@
-classe Pessoa {
-    var texto #tabela = "contatos";
+incluir "conexao.leb";
+
+classe Pessoa estende Conexao {
+    privado var texto #tabela;
+    privado var texto #nome;
+    privado var texto #fone;
+    privado var texto #email;
     
-    funcao consulta() {
+    funcao construtor() {
+        #tabela = "contatos";
+    }
+
+    publico funcao getNome() { retorna #nome; }
+    publico funcao setNome(texto #n) { #nome = #n; }
+    
+    publico funcao getFone() { retorna #fone; }
+    publico funcao setFone(texto #f) { #fone = #f; }
+    
+    publico funcao getEmail() { retorna #email; }
+    publico funcao setEmail(texto #e) { #email = #e; }
+    
+    publico funcao consulta() {
         var texto #sql = "SELECT * FROM ${#tabela}";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;
     }
     
-    funcao consultaID(texto #valorId) {
+    publico funcao consultaID(texto #valorId) {
         var texto #sql = "SELECT * FROM ${#tabela} WHERE id = ${#valorId}";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;
     }
     
-    funcao inserir() {
+    publico funcao inserir() {
         var texto #sql = "INSERT INTO ${#tabela} (nome, fone, email) VALUES ('${#nome}', '${#fone}', '${#email}')";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;
     }
     
-    funcao editar(texto #valorId) {
+    publico funcao editar(texto #valorId) {
         var texto #sql = "UPDATE ${#tabela} SET nome = '${#nome}', fone = '${#fone}', email = '${#email}' WHERE id = ${#valorId}";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;
     }
     
-    funcao excluir(texto #valorId) {
+    publico funcao excluir(texto #valorId) {
         var texto #sql = "DELETE FROM ${#tabela} WHERE id = ${#valorId}";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;

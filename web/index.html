@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>Divisão de Conta</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .campo { margin-bottom: 10px; }
+        input { padding: 5px; width: 100px; }
+        button { padding: 10px 15px; margin-top: 10px; cursor: pointer; }
+        #resultado { margin-top: 20px; font-weight: bold; color: blue; }
+    </style>
+</head>
+<body>
+
+    <h2>Calculadora de Conta</h2>
+
+    <div class="campo">Produto 1 (R$): <input type="number" id="p1" value="0"></div>
+    <div class="campo">Produto 2 (R$): <input type="number" id="p2" value="0"></div>
+    <div class="campo">Produto 3 (R$): <input type="number" id="p3" value="0"></div>
+    <div class="campo">Produto 4 (R$): <input type="number" id="p4" value="0"></div>
+    <hr>
+    <div class="campo">Nº de Pessoas: <input type="number" id="pessoas" value="1"></div>
+    
+    <button onclick="calcular()">Calcular Divisão</button>
+
+    <div id="resultado"></div>
+
+    <script>
+        function calcular() {
+            let p1 = document.getElementById("p1").value || 0;
+            let p2 = document.getElementById("p2").value || 0;
+            let p3 = document.getElementById("p3").value || 0;
+            let p4 = document.getElementById("p4").value || 0;
+            let pessoas = document.getElementById("pessoas").value || 1;
+
+            let payload = p1 + "|" + p2 + "|" + p3 + "|" + p4 + "|" + pessoas;
+
+            let xhttp = new XMLHttpRequest();
+            xhttp.onreadystatechange = function() {
+                if (this.readyState == 4) {
+                    if (this.status == 200) {
+                        document.getElementById("resultado").innerText = this.responseText;
+                    } else {
+                        document.getElementById("resultado").innerText = "Erro ao conectar com o backend.";
+                    }
+                }
+            };
+            xhttp.open("POST", "http://localhost:8000", true);
+            xhttp.send(payload);
+        }
+    </script>
+
+</body>
+</html>

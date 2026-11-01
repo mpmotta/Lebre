@@ -1,12 +1,18 @@
-var texto #host = "localhost";
-var texto #usuario = "root";
-var texto #senha = "apple";
-var texto #banco = "agenda";
+classe abstrata Conexao {
+    privado var texto #host;
+    privado var texto #usuario;
+    privado var texto #senha;
+    privado var texto #banco;
 
-var booleano #conectado = mysqlConectar(#host, #usuario, #senha, #banco);
-
-se (#conectado) {
-    mostrar("Conexao com MySQL estabelecida com sucesso.");
-} senao {
-    mostrar("Erro critico: Falha ao conectar no banco de dados.");
+    funcao construtor() {
+        #host = "localhost";
+        #usuario = "root";
+        #senha = "apple";
+        #banco = "agenda";
+        
+        var booleano #conectado = mysqlConectar(#host, #usuario, #senha, #banco);
+        se (#conectado == falso) {
+            mostrar("Erro critico: Falha ao conectar no banco de dados.");
+        }
+    }
 }

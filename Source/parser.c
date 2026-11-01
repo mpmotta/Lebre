@@ -7,8 +7,11 @@ ASTNode* create_node(ASTNodeType type) {
     node->type = type;
     node->op = T_FIM;
     node->var_type = T_FIM;
+    node->visibilidade = T_PUBLICO;
+    node->is_abstract = 0;
     node->name[0] = '\0';
     node->prop_name[0] = '\0';
+    node->parent_name[0] = '\0';
     node->left = node->right = node->cond = node->body = node->alt = node->init = node->step = NULL;
     node->args = malloc(sizeof(ASTNode*) * 50);
     node->arg_count = 0;
@@ -155,11 +158,13 @@ ASTNode* parse_primary() {
     }
     if (tkns[pos].type == T_IDENTIFICADOR || tkns[pos].type == T_SCREAM_SNAKE) {
         strcpy(node->name, tkns[pos].value); pos++;
-        if (tkns[pos].type == T_PONTO) {
+        if (tkns[pos].type == T_SETA) {
             pos++;
-            strcpy(node->prop_name, tkns[pos].value); pos++;
+            char tmp_name[128];
+            strcpy(tmp_name, tkns[pos].value); pos++;
             if (tkns[pos].type == T_ABRE_PAR) {
                 node->type = AST_METODO_CHAMADA; pos++;
+                strcpy(node->prop_name, tmp_name);
                 while (tkns[pos].type != T_FECHA_PAR && tkns[pos].type != T_FIM) {
                     if (tkns[pos].type == T_VIRGULA) pos++;
                     else node->args[node->arg_count++] = parse_expression();
@@ -168,6 +173,11 @@ ASTNode* parse_primary() {
                 return node;
             }
             node->type = AST_PROPRIEDADE_ACESSO;
+            if (tmp_name[0] != '#') {
+                sprintf(node->prop_name, "#%s", tmp_name);
+            } else {
+                strcpy(node->prop_name, tmp_name);
+            }
             return node;
         }
         if (tkns[pos].type == T_ABRE_COL) {
@@ -242,15 +252,38 @@ ASTNode* parse_bloco() {
 
 ASTNode* parse_statement() {
     ASTNode* node = NULL;
+    TokenType visibilidade_atual = T_PUBLICO;
 
     if (tkns[pos].type == T_PONTO_VIRGULA) {
         pos++;
         return create_node(AST_VAZIO);
     }
     
+    if (tkns[pos].type == T_PUBLICO || tkns[pos].type == T_PRIVADO || tkns[pos].type == T_PROTEGIDO) {
+        visibilidade_atual = tkns[pos].type;
+        pos++;
+    }
+    
     if (tkns[pos].type == T_CLASSE) {
-        node = create_node(AST_CLASSE_DEF); pos++;
-        strcpy(node->name, tkns[pos].value); pos++;
+        node = create_node(AST_CLASSE_DEF); 
+        pos++;
+        
+        int is_abstract = 0;
+        if (tkns[pos].type == T_ABSTRATA) {
+            is_abstract = 1;
+            pos++;
+        }
+        
+        node->is_abstract = is_abstract;
+        strcpy(node->name, tkns[pos].value); 
+        pos++;
+        
+        strcpy(node->parent_name, "");
+        if (tkns[pos].type == T_ESTENDE) {
+            pos++;
+            strcpy(node->parent_name, tkns[pos].value);
+            pos++;
+        }
         node->body = parse_bloco();
         return node;
     }
@@ -366,6 +399,7 @@ ASTNode* parse_statement() {
     }
     if (tkns[pos].type == T_FUNCAO) {
         node = create_node(AST_FUNCAO_DEF); pos++;
+        node->visibilidade = visibilidade_atual;
         if (tkns[pos].type == T_INT || tkns[pos].type == T_TEXTO || tkns[pos].type == T_DECIMAL || tkns[pos].type == T_BOOLEANO || tkns[pos].type == T_LISTA || tkns[pos].type == T_OBJETO) pos++;
         strcpy(node->name, tkns[pos].value); pos++;
         if (tkns[pos].type == T_ABRE_PAR) pos++;
@@ -414,6 +448,7 @@ ASTNode* parse_statement() {
         }
         node = create_node(is_const ? AST_CONSTANTE : AST_DECLARACAO);
         node->var_type = v_type;
+        node->visibilidade = visibilidade_atual;
         strcpy(node->name, tkns[pos].value); pos++;
         
         if (tkns[pos].type == T_ATRIBUICAO) {
@@ -438,13 +473,17 @@ ASTNode* parse_statement() {
 
     if (tkns[pos].type == T_IDENTIFICADOR || tkns[pos].type == T_SCREAM_SNAKE) {
         char temp_name[128]; strcpy(temp_name, tkns[pos].value); pos++;
-        if (tkns[pos].type == T_PONTO) {
+        if (tkns[pos].type == T_SETA) {
             pos++;
             char prop_name[128]; strcpy(prop_name, tkns[pos].value); pos++;
             if (tkns[pos].type == T_ATRIBUICAO) {
                 node = create_node(AST_PROPRIEDADE_ATRIBUICAO);
                 strcpy(node->name, temp_name);
-                strcpy(node->prop_name, prop_name);
+                if (prop_name[0] != '#') {
+                    sprintf(node->prop_name, "#%s", prop_name);
+                } else {
+                    strcpy(node->prop_name, prop_name);
+                }
                 pos++;
                 node->right = parse_expression();
                 exigir_ponto_virgula();

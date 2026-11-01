@@ -63,7 +63,6 @@ LebreValue func_mysqlConsultar(Ambiente* env, ASTNode** args, int arg_count) {
                     strcat(json, row[i]);
                 } else {
                     strcat(json, "\"");
-                    // Simplificado: idealmente escapar aspas internas
                     strcat(json, row[i]);
                     strcat(json, "\"");
                 }
@@ -88,11 +87,11 @@ LebreValue func_mysqlFechar(Ambiente* env, ASTNode** args, int arg_count) {
 
 void registrar_modulo_mysql(Ambiente* env) {
     LebreValue v1; v1.type = VAL_FUNCAO_C; v1.data.func_c = func_mysqlConectar;
-    set_var(env, "mysqlConectar", v1, 1, 1);
+    set_var(env, "mysqlConectar", v1, 1, 1, T_PUBLICO);
     
     LebreValue v2; v2.type = VAL_FUNCAO_C; v2.data.func_c = func_mysqlConsultar;
-    set_var(env, "mysqlConsultar", v2, 1, 1);
+    set_var(env, "mysqlConsultar", v2, 1, 1, T_PUBLICO);
     
     LebreValue v3; v3.type = VAL_FUNCAO_C; v3.data.func_c = func_mysqlFechar;
-    set_var(env, "mysqlFechar", v3, 1, 1);
+    set_var(env, "mysqlFechar", v3, 1, 1, T_PUBLICO);
 }
