@@ -26,7 +26,7 @@ Os arquivos de script da linguagem utilizam a extensão `.leb`.
 
 O motor da Lebre é compilado diretamente a partir dos arquivos fonte em C. No diretório raiz, execute:
 
-### No macOS
+### No Linux ou macOS
 
 ```
 clang *.c -o lebre -lreadline
