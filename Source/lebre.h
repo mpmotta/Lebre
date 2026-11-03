@@ -28,10 +28,10 @@ typedef enum {
     T_E, T_OU, T_INCREMENTO, T_DECREMENTO, T_SETA,
     T_ABRE_PAR, T_FECHA_PAR, T_ABRE_CHAVE, T_FECHA_CHAVE, T_ABRE_COL, T_FECHA_COL,
     T_PONTO_VIRGULA, T_VIRGULA, T_DOIS_PONTOS, T_PONTO, T_INTERROGACAO
-} TokenType;
+} TipoToken;
 
 typedef struct {
-    TokenType type;
+    TipoToken type;
     char value[256];
     int numero_linha;
     char arquivo[64];
@@ -51,9 +51,9 @@ typedef enum {
 
 typedef struct ASTNode {
     ASTNodeType type;
-    TokenType op;
-    TokenType var_type;
-    TokenType visibilidade;
+    TipoToken op;
+    TipoToken var_type;
+    TipoToken visibilidade;
     int is_abstract;
     int numero_linha;
     char arquivo[64];
@@ -99,7 +99,7 @@ typedef struct {
     char name[128];
     LebreValue val;
     int is_const;
-    TokenType visibilidade;
+    TipoToken visibilidade;
 } Variavel;
 
 typedef struct Ambiente {
@@ -123,7 +123,7 @@ ASTNode* parse(Token* tokens);
 void analisar_semantica(ASTNode* root);
 LebreValue get_var(Ambiente* env, const char* name);
 Variavel* buscar_variavel(Ambiente* env, const char* name);
-void set_var(Ambiente* env, const char* name, LebreValue val, int is_const, int is_global, TokenType visibilidade);
+void set_var(Ambiente* env, const char* name, LebreValue val, int is_const, int is_global, TipoToken visibilidade);
 LebreValue avalia_expressao(ASTNode* node, Ambiente* env);
 void executa(ASTNode* node, Ambiente* env);
 

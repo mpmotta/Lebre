@@ -1,5 +1,10 @@
 #include "lebre.h"
-#include <mysql/mysql.h>
+
+#if defined(_WIN32) || defined(_WIN64)
+    #include <mysql.h>
+#else
+    #include <mysql/mysql.h>
+#endif
 
 MYSQL *conn = NULL;
 

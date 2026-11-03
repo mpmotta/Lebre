@@ -37,7 +37,7 @@ void exigir_ponto_virgula() {
     }
 }
 
-int get_precedence(TokenType type) {
+int get_precedence(TipoToken type) {
     switch(type) {
         case T_OU: return 1;
         case T_E: return 2;
@@ -236,7 +236,7 @@ ASTNode* parse_binop(ASTNode* left, int min_prec) {
     while (1) {
         int prec = get_precedence(tkns[pos].type);
         if (prec < min_prec || prec == 0) break;
-        TokenType op = tkns[pos].type; pos++;
+        TipoToken op = tkns[pos].type; pos++;
         ASTNode* right = parse_primary();
         int next_prec = get_precedence(tkns[pos].type);
         if (prec < next_prec) right = parse_binop(right, prec + 1);
@@ -279,7 +279,7 @@ ASTNode* parse_bloco() {
 
 ASTNode* parse_statement() {
     ASTNode* node = NULL;
-    TokenType visibilidade_atual = T_PUBLICO;
+    TipoToken visibilidade_atual = T_PUBLICO;
 
     if (tkns[pos].type == T_PONTO_VIRGULA) {
         pos++;
@@ -453,7 +453,7 @@ ASTNode* parse_statement() {
         int is_const = (tkns[pos].type == T_CONS);
         int is_obj = (tkns[pos].type == T_OBJETO);
         pos++;
-        TokenType v_type = T_INT;
+        TipoToken v_type = T_INT;
         if (is_obj) {
             v_type = T_OBJETO;
         } else if (tkns[pos].type == T_INT || tkns[pos].type == T_TEXTO || tkns[pos].type == T_DECIMAL || tkns[pos].type == T_BOOLEANO || tkns[pos].type == T_LISTA) {

@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
     registrar_modulo_http(&ambiente_global);
 
     if (argc == 1) {
-        printf("Interpretador Lebre v1.0\n");
+        printf("Interpretador Lebre v2.3\n");
         printf("Digite 'sair' para encerrar o terminal.\n");
         modo_repl = 1;
         

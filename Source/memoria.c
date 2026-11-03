@@ -25,7 +25,7 @@ LebreValue get_var(Ambiente* env, const char* name) {
     return v;
 }
 
-void set_var(Ambiente* env, const char* name, LebreValue val, int is_const, int is_global, TokenType visibilidade) {
+void set_var(Ambiente* env, const char* name, LebreValue val, int is_const, int is_global, TipoToken visibilidade) {
     Ambiente* target = is_global ? &ambiente_global : env;
     
     Variavel* var = buscar_variavel(target, name);
