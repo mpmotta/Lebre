@@ -60,7 +60,7 @@ ASTNode* parse_string_interp(const char* str) {
     ASTNode* root = NULL;
 
     while (str[i] != '\0') {
-        if (str[i] == '$' && str[i+1] == '{') {
+        if (str[i] == '{' && str[i+1] == '{') {
             if (buf_i > 0) {
                 buffer[buf_i] = '\0';
                 ASTNode* lit = create_node(AST_LITERAL);
@@ -80,10 +80,10 @@ ASTNode* parse_string_interp(const char* str) {
             i += 2;
             char var_name[128] = {0};
             int v_i = 0;
-            while (str[i] != '\0' && str[i] != '}') {
+            while (str[i] != '\0' && !(str[i] == '}' && str[i+1] == '}')) {
                 var_name[v_i++] = str[i++];
             }
-            if (str[i] == '}') i++;
+            if (str[i] == '}' && str[i+1] == '}') i += 2;
             
             ASTNode* var_node = create_node(AST_VARIAVEL);
             strcpy(var_node->name, var_name);

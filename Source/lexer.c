@@ -101,7 +101,7 @@ void lex(const char* src, Token* tokens) {
             char* v = tokens[t].value;
             if (strcmp(v, "var") == 0) tokens[t].type = T_VAR;
             else if (strcmp(v, "cons") == 0) tokens[t].type = T_CONS;
-            else if (strcmp(v, "int") == 0) tokens[t].type = T_INT;
+            else if (strcmp(v, "int") == 0 || strcmp(v, "inteiro") == 0) tokens[t].type = T_INT;
             else if (strcmp(v, "decimal") == 0) tokens[t].type = T_DECIMAL;
             else if (strcmp(v, "texto") == 0) tokens[t].type = T_TEXTO;
             else if (strcmp(v, "booleano") == 0) tokens[t].type = T_BOOLEANO;

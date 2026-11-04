@@ -13,6 +13,7 @@ typedef struct Escopo {
 } Escopo;
 
 Escopo* escopo_atual = NULL;
+extern int modo_repl;
 
 void iniciar_escopo() {
     Escopo* novo = malloc(sizeof(Escopo));
@@ -89,7 +90,14 @@ void analisar_filhos(ASTNode* node) {
 void analisar_no(ASTNode* node) {
     if (!node) return;
 
-    if (node->type == AST_PROGRAMA || node->type == AST_BLOCO) {
+    if (node->type == AST_PROGRAMA) {
+        for (int i = 0; i < node->arg_count; i++) {
+            analisar_no(node->args[i]);
+        }
+        return;
+    }
+
+    if (node->type == AST_BLOCO) {
         iniciar_escopo();
         for (int i = 0; i < node->arg_count; i++) {
             analisar_no(node->args[i]);
@@ -174,8 +182,14 @@ void analisar_no(ASTNode* node) {
 }
 
 void analisar_semantica(ASTNode* root) {
-    escopo_atual = NULL;
-    iniciar_escopo();
+    if (modo_repl == 0 || escopo_atual == NULL) {
+        escopo_atual = NULL;
+        iniciar_escopo();
+    }
+    
     analisar_no(root);
-    fechar_escopo();
+    
+    if (modo_repl == 0) {
+        fechar_escopo();
+    }
 }

@@ -20,31 +20,31 @@ classe Pessoa estende Conexao {
     publico funcao setEmail(texto #e) { #email = #e; }
     
     publico funcao consulta() {
-        var texto #sql = "SELECT * FROM ${#tabela}";
+        var texto #sql = "SELECT * FROM {{#tabela}}";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;
     }
     
     publico funcao consultaID(texto #valorId) {
-        var texto #sql = "SELECT * FROM ${#tabela} WHERE id = ${#valorId}";
+        var texto #sql = "SELECT * FROM {{#tabela}} WHERE id = {{#valorId}}";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;
     }
     
     publico funcao inserir() {
-        var texto #sql = "INSERT INTO ${#tabela} (nome, fone, email) VALUES ('${#nome}', '${#fone}', '${#email}')";
+        var texto #sql = "INSERT INTO {{#tabela}} (nome, fone, email) VALUES ('{{#nome}}', '{{#fone}}', '{{#email}}')";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;
     }
     
     publico funcao editar(texto #valorId) {
-        var texto #sql = "UPDATE ${#tabela} SET nome = '${#nome}', fone = '${#fone}', email = '${#email}' WHERE id = ${#valorId}";
+        var texto #sql = "UPDATE {{#tabela}} SET nome = '{{#nome}}', fone = '{{#fone}}', email = '{{#email}}' WHERE id = {{#valorId}}";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;
     }
     
     publico funcao excluir(texto #valorId) {
-        var texto #sql = "DELETE FROM ${#tabela} WHERE id = ${#valorId}";
+        var texto #sql = "DELETE FROM {{#tabela}} WHERE id = {{#valorId}}";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;
     }
