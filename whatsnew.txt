@@ -5,8 +5,7 @@ Lebre - What's New (Atualizações Recentes)
 *Versão 2.4
 	- Correção definitiva do problema de compatibilidade e portabilidade com bancos de dados MySQL 8.0 (resolvido o loop infinito no handshake SSL e o crash de ABI)
 	- Substituição da DLL antiga da Oracle pelo MariaDB Connector/C (drop-in replacement) para suporte a conexões seguras
-	- Implementação de suporte oficial a compilação nativa no macOS (Apple Silicon M2) utilizando o compilador clang via Homebrew
-	- Padronização do arquivo `modulo_mysql.c` para unificar a compilação entre Windows e macOS, removendo a necessidade de diretivas de sistema operacional para a localização do `mysql.h`
+	- Padronização do arquivo `modulo_mysql.c` para unificar a compilação entre Windows e macOS.
 	- Atualização da rotina de compilação (`compilar.sh`) no macOS para apontar diretamente para a raiz do conector e compilar todos os módulos (`*.c`) em conjunto com a biblioteca `readline`
 
 

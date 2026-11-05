@@ -3,14 +3,16 @@ classe abstrata Conexao {
     privado var texto #usuario;
     privado var texto #senha;
     privado var texto #banco;
+    privado var int #porta;
 
     funcao construtor() {
-        #host = "localhost";
+        #host = "127.0.0.1";
         #usuario = "root";
-        #senha = "apple";
+        #senha = "";
         #banco = "agenda";
+        #porta = 3307;
         
-        var booleano #conectado = mysqlConectar(#host, #usuario, #senha, #banco);
+        var booleano #conectado = mysqlConectar(#host, #usuario, #senha, #banco, #porta);
         se (#conectado == falso) {
             mostrar("Erro critico: Falha ao conectar no banco de dados.");
         }

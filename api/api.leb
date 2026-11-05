@@ -2,7 +2,7 @@ incluir "controller.leb";
 
 iniciarServidor(8000);
 
-mostrar("servidor rodando em http://localhost:8000");
+mostrar("servidor rodando em http://127.0.0.1:8000");
 
 enquanto (verdadeiro) {
     handleRequest();
