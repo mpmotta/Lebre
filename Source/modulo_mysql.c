@@ -1,10 +1,5 @@
 #include "lebre.h"
-
-#if defined(_WIN32) || defined(_WIN64)
-    #include <mysql.h>
-#else
-    #include <mysql/mysql.h>
-#endif
+#include <mysql.h>
 
 MYSQL *conn = NULL;
 
@@ -37,13 +32,13 @@ LebreValue func_mysqlConsultar(Ambiente* env, ASTNode** args, int arg_count) {
     if (mysql_query(conn, query.data.s)) { lancar_erro(mysql_error(conn)); return val; }
     
     MYSQL_RES *result = mysql_store_result(conn);
-    if (!result) return val; // INSERT/UPDATE/DELETE
+    if (!result) return val; 
     
     int num_campos = mysql_num_fields(result);
     MYSQL_FIELD *campos = mysql_fetch_fields(result);
     MYSQL_ROW row;
     
-    char* json = malloc(1024 * 1024); // Buffer de 1MB inicial
+    char* json = malloc(1024 * 1024); 
     strcpy(json, "[");
     int primeira_linha = 1;
     
