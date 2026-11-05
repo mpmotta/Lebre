@@ -24,12 +24,12 @@ Os arquivos de script da linguagem utilizam a extensão `.leb`.
 
 ## 🛠️ Compilação e Execução
 
-O motor da Lebre é compilado diretamente a partir dos arquivos fonte em C. No diretório raiz, execute:
+O motor da Lebre é compilado diretamente a partir dos arquivos fonte em C. No diretório Source, execute:
 
 ### No macOS
 
 ```
-clang *.c -o lebre -lreadline
+./compilar.sh
 
 
 ```
@@ -37,7 +37,7 @@ clang *.c -o lebre -lreadline
 ### No Windows (via MinGW64)
 
 ```
-mingw64\bin\gcc.exe *.c -o lebre.exe -lws2_32
+compilar.bat
 
 
 ```
