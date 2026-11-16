@@ -2,6 +2,12 @@
 Lebre - What's New (Atualizações Recentes)
 =========================================
 
+*Versão 2.5
+	- Ajuste na sintaxe da linguagem: modificadores de acesso exclusivamente no feminino (publica, privada, protegida).
+	- Reposicionamento de modificadores: modificador de variável posicionado após o 'var' (ex: var publica texto #nome) e modificador de função após 'funcao' (ex: funcao publica teste()), aplicável somente em classes.
+	- Padronização no uso de getters e setters: proibição estrita de 'get' e 'set', substituídos obrigatoriamente pelos prefixos 'pega' e 'seta'.
+	- Reestruturação da instrução carregar(): não retorna mais valor diretamente. Agora recebe a variável por parâmetro para injeção direta via terminal (ex: carregar(#nome)).
+
 *Versão 2.4
 	- Correção definitiva do problema de compatibilidade e portabilidade com bancos de dados MySQL 8.0 (resolvido o loop infinito no handshake SSL e o crash de ABI)
 	- Substituição da DLL antiga da Oracle pelo MariaDB Connector/C (drop-in replacement) para suporte a conexões seguras

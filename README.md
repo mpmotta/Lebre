@@ -30,16 +30,12 @@ O motor da Lebre é compilado diretamente a partir dos arquivos fonte em C. No d
 
 ```
 ./compilar.sh
-
-
 ```
 
 ### No Windows (via MinGW64)
 
 ```
 compilar.bat
-
-
 ```
 
 ### Rodando a Linguagem
@@ -53,8 +49,6 @@ compilar.bat
 ```
 cd api
 ../lebre api.leb
-
-
 ```
 
 ## 📌 1. Regras de Nomenclatura e Escopo
@@ -96,8 +90,6 @@ var int #idade = 53
 var texto #nomeUsuario = "Marcio"
 cons decimal #TAXA_JUROS = 1.5
 var int #contadorAcessos! = 0
-
-
 ```
 
 ## ⚙️ 4. Operadores
@@ -128,8 +120,6 @@ se (#nota >= 7) {
 } senao {
     mostrar("Reprovado")
 }
-
-
 ```
 
 ### Laço Fixo (`linha`) e Condicional (`enquanto`)
@@ -144,8 +134,6 @@ enquanto (#x < 5) {
     mostrar(#x)
     #x++
 }
-
-
 ```
 
 ## 📋 6. Listas (Arrays)
@@ -165,8 +153,6 @@ linhas (var texto #aluno : #alunos) {
 #alunos[0] = "Ana Maria"
 remover(#alunos, 1)
 ordenar(#alunos)
-
-
 ```
 
 ## 🧱 7. Orientação a Objetos
@@ -175,23 +161,21 @@ Suporte completo a classes, herança, encapsulamento (visibilidade) e construtor
 
 ```
 classe abstrata Animal {
-    protegido texto #nome
+    var protegida texto #nome
 
-    publico funcao construtor(var texto #n) {
+    funcao publica construtor(var texto #n) {
         #nome = #n
     }
 }
 
 classe Cachorro estende Animal {
-    publico funcao latir() {
+    funcao publica latir() {
         mostrar(#nome + " diz: Au au!")
     }
 }
 
 var Objeto #meuPet = novo Cachorro("Rex")
 #meuPet->latir()
-
-
 ```
 
 ## 🧩 8. Funções de Usuário
@@ -204,8 +188,6 @@ funcao calcularDobro(var int #valor) {
 
 var int #total = calcularDobro(15)
 mostrar(#total)
-
-
 ```
 
 ## 🛠️ 9. Funções Nativas do Sistema
@@ -213,7 +195,7 @@ mostrar(#total)
 | Função | Descrição | 
 | ----- | ----- | 
 | `mostrar(#var)` | Imprime o valor no terminal. | 
-| `carregar()` | Lê uma entrada de texto do teclado via terminal. | 
+| `carregar(#var)` | Lê uma entrada de texto do teclado e armazena na variável. | 
 | `aleatorio(#min, #max)` | Retorna um número inteiro randômico entre os limites. | 
 | `dividir(#txt, #sep)` | Divide um texto e retorna uma lista baseada no separador. | 
 | `paraInt(#var)` | Converte o valor para inteiro. | 
@@ -236,8 +218,6 @@ salvarArquivo("relatorio.txt", "Dados exportados com sucesso!")
 var texto #conteudo = lerArquivo("relatorio.txt")
 
 incluir "biblioteca_matematica.leb"
-
-
 ```
 
 ## 🌐 11. Servidor Web Nativo, API e Banco de Dados
@@ -254,8 +234,6 @@ iniciarServidor(8000)
 enquanto (verdadeiro) {
     processarRotas()
 }
-
-
 ```
 
 **`controller.leb`**
@@ -268,16 +246,12 @@ funcao processarRotas() {
     var texto #json = mysqlConsultar("SELECT * FROM " + #TABELA_USUARIOS)
     enviarResposta(#json)
 }
-
-
 ```
 
 **`model.leb`**
 
 ```
 cons texto #TABELA_USUARIOS = "usuarios"
-
-
 ```
 
 ## 📄 Licença

@@ -137,15 +137,15 @@ ordenar(#alunos)
  7. ORIENTACAO A OBJETOS
 --------------------------------------------------------------------------------
 classe abstrata Animal {
-    protegido texto #nome
+    var protegida texto #nome
 
-    publico funcao construtor(var texto #n) {
+    funcao publica construtor(var texto #n) {
         #nome = #n
     }
 }
 
 classe Cachorro estende Animal {
-    publico funcao latir() {
+    funcao publica latir() {
         mostrar(#nome + " diz: Au au!")
     }
 }
@@ -168,7 +168,7 @@ mostrar(#total)
  9. FUNCOES NATIVAS DO SISTEMA
 --------------------------------------------------------------------------------
 mostrar(#var)          - Imprime o valor no terminal.
-carregar()             - Lê uma entrada de texto do teclado via terminal.
+carregar(#var)         - Lê uma entrada de texto do teclado e injeta na variável.
 aleatorio(#min, #max)  - Retorna um número inteiro randômico entre os limites.
 dividir(#txt, #sep)    - Divide um texto e retorna uma lista baseada no separador.
 paraInt(#var)          - Converte o valor para inteiro.
