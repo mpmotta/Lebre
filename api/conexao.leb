@@ -1,16 +1,16 @@
 classe abstrata Conexao {
-    privado var texto #host;
-    privado var texto #usuario;
-    privado var texto #senha;
-    privado var texto #banco;
-    privado var int #porta;
+    var privada texto #host;
+    var privada texto #usuario;
+    var privada texto #senha;
+    var privada texto #banco;
+    var privada int #porta;
 
     funcao construtor() {
         #host = "127.0.0.1";
         #usuario = "root";
-        #senha = "";
+        #senha = "apple";
         #banco = "agenda";
-        #porta = 3307;
+        #porta = 3306;
         
         var booleano #conectado = mysqlConectar(#host, #usuario, #senha, #banco, #porta);
         se (#conectado == falso) {

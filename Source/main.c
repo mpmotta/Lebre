@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
     registrar_modulo_http(&ambiente_global);
 
     if (argc == 1) {
-        printf("Interpretador Lebre v2.4\n");
+        printf("########## Interpretador Lebre v2.5 ##########\n");
         printf("Digite 'sair' para encerrar o terminal.\n");
         modo_repl = 1;
         
@@ -49,14 +49,14 @@ int main(int argc, char** argv) {
 
             #if MODO_WINDOWS
                 char buffer[2048];
-                printf("lebre> ");
+                printf("<lebre> ");
                 if (!fgets(buffer, sizeof(buffer), stdin)) {
                     break;
                 }
                 buffer[strcspn(buffer, "\r\n")] = '\0';
                 linha_lida = strdup(buffer);
             #else
-                linha_lida = readline("lebre> ");
+                linha_lida = readline("<lebre> ");
                 if (!linha_lida) {
                     break;
                 }

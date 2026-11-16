@@ -2,6 +2,8 @@
 
 #if defined(_WIN32) || defined(_WIN64)
     #include <mysql.h>
+#elif defined(__APPLE__) || defined(__MACH__)
+    #include <mysql.h>
 #else
     #include <mysql/mysql.h>
 #endif

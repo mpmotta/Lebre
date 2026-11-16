@@ -239,10 +239,17 @@ LebreValue avalia_expressao(ASTNode* node, Ambiente* env) {
     }
     if (node->type == AST_CHAMADA_NATIVA) {
         if (node->op == T_CARREGAR) {
+            if (node->arg_count < 1 || node->args[0]->type != AST_VARIAVEL) {
+                lancar_erro_rastreado("A funcao carregar exige uma variavel como parametro para receber o valor");
+            }
             char buf[1024];
             if (fgets(buf, sizeof(buf), stdin)) buf[strcspn(buf, "\r\n")] = '\0';
             else buf[0] = '\0';
-            val.type = VAL_TEXTO; val.data.s = strdup(buf); return val;
+            
+            LebreValue text_val; text_val.type = VAL_TEXTO; text_val.data.s = strdup(buf);
+            set_var(env, node->args[0]->name, text_val, 0, node->args[0]->name[strlen(node->args[0]->name)-1] == '!', T_PUBLICO);
+            
+            val.type = VAL_TEXTO; val.data.s = strdup(""); return val;
         }
         if (node->op == T_LER_ARQUIVO) {
             LebreValue arq = avalia_expressao(node->args[0], env);

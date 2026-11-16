@@ -13,26 +13,26 @@ funcao consultaID(texto #id) {
 }
 
 funcao inserir(Objeto #pessoa) {
-    se (contar(#pessoa->getNome()) == 0 || contar(#pessoa->getFone()) == 0 || contar(#pessoa->getEmail()) == 0) {
+    se (contar(#pessoa->pegaNome()) == 0 || contar(#pessoa->pegaFone()) == 0 || contar(#pessoa->pegaEmail()) == 0) {
         enviarResposta("erro: campo vazio");
     } senao {
         Objeto #pessoaModel = novo Pessoa();
-        #pessoaModel->setNome(#pessoa->getNome());
-        #pessoaModel->setFone(#pessoa->getFone());
-        #pessoaModel->setEmail(#pessoa->getEmail());
+        #pessoaModel->setaNome(#pessoa->pegaNome());
+        #pessoaModel->setaFone(#pessoa->pegaFone());
+        #pessoaModel->setaEmail(#pessoa->pegaEmail());
         #pessoaModel->inserir();
         enviarResposta("[{\"status\":\"cadastro_ok\"}]");
     }
 }
 
 funcao editar(Objeto #pessoa, texto #id) {
-    se (contar(#pessoa->getNome()) == 0 || contar(#pessoa->getFone()) == 0 || contar(#pessoa->getEmail()) == 0) {
+    se (contar(#pessoa->pegaNome()) == 0 || contar(#pessoa->pegaFone()) == 0 || contar(#pessoa->pegaEmail()) == 0) {
         enviarResposta("erro: campo vazio");
     } senao {
         Objeto #pessoaModel = novo Pessoa();
-        #pessoaModel->setNome(#pessoa->getNome());
-        #pessoaModel->setFone(#pessoa->getFone());
-        #pessoaModel->setEmail(#pessoa->getEmail());
+        #pessoaModel->setaNome(#pessoa->pegaNome());
+        #pessoaModel->setaFone(#pessoa->pegaFone());
+        #pessoaModel->setaEmail(#pessoa->pegaEmail());
         #pessoaModel->editar(#id);
         enviarResposta("[{\"status\":\"edit_ok\"}]");
     }
@@ -61,9 +61,9 @@ funcao handleRequest() {
                 excluir(#dados[1]);
             } senao se (#acao === "salvar") {
                 Objeto #pessoa = novo Pessoa();
-                #pessoa->setNome(#dados[2]);
-                #pessoa->setFone(#dados[3]);
-                #pessoa->setEmail(#dados[4]);
+                #pessoa->setaNome(#dados[2]);
+                #pessoa->setaFone(#dados[3]);
+                #pessoa->setaEmail(#dados[4]);
                 
                 se (#dados[1] === "0") {
                     inserir(#pessoa);

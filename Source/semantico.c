@@ -1,4 +1,6 @@
 #include "lebre.h"
+#include <string.h>
+#include <ctype.h>
 
 typedef struct {
     char name[128];
@@ -127,6 +129,13 @@ void analisar_no(ASTNode* node) {
     }
 
     if (node->type == AST_FUNCAO_DEF) {
+        if ((strncmp(node->name, "get", 3) == 0 && isupper((unsigned char)node->name[3])) || 
+            (strncmp(node->name, "set", 3) == 0 && isupper((unsigned char)node->name[3]))) {
+            char msg[256];
+            sprintf(msg, "Uso de 'get' ou 'set' proibido. Utilize 'pega' ou 'seta' no metodo: %s", node->name);
+            lancar_erro(msg);
+        }
+        
         declarar_simbolo(node->name, 1, 0);
         iniciar_escopo();
         for (int i = 0; i < node->arg_count; i++) {
@@ -145,6 +154,16 @@ void analisar_no(ASTNode* node) {
     }
 
     if (node->type == AST_VARIAVEL || node->type == AST_INDEX_ACESSO || node->type == AST_INDEX_ATRIBUICAO || node->type == AST_ATRIBUICAO || node->type == AST_INCREMENTO || node->type == AST_DECREMENTO || node->type == AST_PROPRIEDADE_ACESSO || node->type == AST_PROPRIEDADE_ATRIBUICAO || node->type == AST_METODO_CHAMADA) {
+        
+        if (node->type == AST_METODO_CHAMADA) {
+            if ((strncmp(node->prop_name, "get", 3) == 0 && isupper((unsigned char)node->prop_name[3])) || 
+                (strncmp(node->prop_name, "set", 3) == 0 && isupper((unsigned char)node->prop_name[3]))) {
+                char msg[256];
+                sprintf(msg, "Uso de 'get' ou 'set' proibido. Utilize 'pega' ou 'seta' no metodo: %s", node->prop_name);
+                lancar_erro(msg);
+            }
+        }
+
         int is_const = 0;
         if (!buscar_simbolo(node->name, &is_const, NULL)) {
             char msg[256];

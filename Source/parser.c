@@ -1,6 +1,7 @@
 #include "lebre.h"
 
 int pos = 0; Token* tkns;
+int escopo_classe = 0;
 
 ASTNode* create_node(ASTNodeType type) {
     ASTNode* node = malloc(sizeof(ASTNode));
@@ -128,12 +129,6 @@ ASTNode* parse_string_interp(const char* str) {
 
 ASTNode* parse_primary() {
     ASTNode* node = create_node(AST_LITERAL);
-    if (tkns[pos].type == T_CARREGAR) {
-        node->type = AST_CHAMADA_NATIVA; node->op = tkns[pos].type; pos++;
-        if (tkns[pos].type == T_ABRE_PAR) pos++;
-        if (tkns[pos].type == T_FECHA_PAR) pos++;
-        return node;
-    }
     if (tkns[pos].type == T_NOVO) {
         node->type = AST_INSTANCIA; pos++;
         strcpy(node->name, tkns[pos].value); pos++;
@@ -145,7 +140,7 @@ ASTNode* parse_primary() {
         if (tkns[pos].type == T_FECHA_PAR) pos++;
         return node;
     }
-    if (tkns[pos].type == T_PARA_INT || tkns[pos].type == T_PARA_DECIMAL || tkns[pos].type == T_PARA_TEXTO || tkns[pos].type == T_ORDENAR || tkns[pos].type == T_LER_ARQUIVO || tkns[pos].type == T_ALEATORIO || tkns[pos].type == T_DIVIDIR || tkns[pos].type == T_MEDIA || tkns[pos].type == T_SOMA || tkns[pos].type == T_MAXIMO || tkns[pos].type == T_MINIMO || tkns[pos].type == T_CONTAR || tkns[pos].type == T_ARRED || tkns[pos].type == T_TETO || tkns[pos].type == T_PISO) {
+    if (tkns[pos].type == T_CARREGAR || tkns[pos].type == T_PARA_INT || tkns[pos].type == T_PARA_DECIMAL || tkns[pos].type == T_PARA_TEXTO || tkns[pos].type == T_ORDENAR || tkns[pos].type == T_LER_ARQUIVO || tkns[pos].type == T_ALEATORIO || tkns[pos].type == T_DIVIDIR || tkns[pos].type == T_MEDIA || tkns[pos].type == T_SOMA || tkns[pos].type == T_MAXIMO || tkns[pos].type == T_MINIMO || tkns[pos].type == T_CONTAR || tkns[pos].type == T_ARRED || tkns[pos].type == T_TETO || tkns[pos].type == T_PISO) {
         node->type = AST_CHAMADA_NATIVA; node->op = tkns[pos].type; pos++;
         if (tkns[pos].type == T_ABRE_PAR) pos++;
         while (tkns[pos].type != T_FECHA_PAR && tkns[pos].type != T_FIM) {
@@ -279,16 +274,10 @@ ASTNode* parse_bloco() {
 
 ASTNode* parse_statement() {
     ASTNode* node = NULL;
-    TipoToken visibilidade_atual = T_PUBLICO;
 
     if (tkns[pos].type == T_PONTO_VIRGULA) {
         pos++;
         return create_node(AST_VAZIO);
-    }
-    
-    if (tkns[pos].type == T_PUBLICO || tkns[pos].type == T_PRIVADO || tkns[pos].type == T_PROTEGIDO) {
-        visibilidade_atual = tkns[pos].type;
-        pos++;
     }
     
     if (tkns[pos].type == T_CLASSE) {
@@ -311,7 +300,10 @@ ASTNode* parse_statement() {
             strcpy(node->parent_name, tkns[pos].value);
             pos++;
         }
+        int prev_escopo = escopo_classe;
+        escopo_classe = 1;
         node->body = parse_bloco();
+        escopo_classe = prev_escopo;
         return node;
     }
 
@@ -426,7 +418,19 @@ ASTNode* parse_statement() {
     }
     if (tkns[pos].type == T_FUNCAO) {
         node = create_node(AST_FUNCAO_DEF); pos++;
+        
+        TipoToken visibilidade_atual = T_PUBLICO;
+        if (tkns[pos].type == T_PUBLICO || tkns[pos].type == T_PRIVADO || tkns[pos].type == T_PROTEGIDO) {
+            if (!escopo_classe) {
+                char msg[256];
+                sprintf(msg, "Modificador de acesso nao permitido fora de classe (Arquivo: %s, Linha: %d)", tkns[pos].arquivo, tkns[pos].numero_linha);
+                lancar_erro(msg);
+            }
+            visibilidade_atual = tkns[pos].type;
+            pos++;
+        }
         node->visibilidade = visibilidade_atual;
+        
         if (tkns[pos].type == T_INT || tkns[pos].type == T_TEXTO || tkns[pos].type == T_DECIMAL || tkns[pos].type == T_BOOLEANO || tkns[pos].type == T_LISTA || tkns[pos].type == T_OBJETO) pos++;
         strcpy(node->name, tkns[pos].value); pos++;
         if (tkns[pos].type == T_ABRE_PAR) pos++;
@@ -446,13 +450,30 @@ ASTNode* parse_statement() {
             }
         }
         if (tkns[pos].type == T_FECHA_PAR) pos++;
+        
+        int prev_escopo = escopo_classe;
+        escopo_classe = 0;
         node->body = parse_bloco();
+        escopo_classe = prev_escopo;
+        
         return node;
     }
     if (tkns[pos].type == T_VAR || tkns[pos].type == T_CONS || tkns[pos].type == T_OBJETO) {
         int is_const = (tkns[pos].type == T_CONS);
         int is_obj = (tkns[pos].type == T_OBJETO);
         pos++;
+        
+        TipoToken visibilidade_atual = T_PUBLICO;
+        if (tkns[pos].type == T_PUBLICO || tkns[pos].type == T_PRIVADO || tkns[pos].type == T_PROTEGIDO) {
+            if (!escopo_classe) {
+                char msg[256];
+                sprintf(msg, "Modificador de acesso nao permitido fora de classe (Arquivo: %s, Linha: %d)", tkns[pos].arquivo, tkns[pos].numero_linha);
+                lancar_erro(msg);
+            }
+            visibilidade_atual = tkns[pos].type;
+            pos++;
+        }
+        
         TipoToken v_type = T_INT;
         if (is_obj) {
             v_type = T_OBJETO;
@@ -462,6 +483,7 @@ ASTNode* parse_statement() {
         }
         if (tkns[pos].type == T_DATA) {
             node = create_node(AST_DATA_DEF); pos++;
+            node->visibilidade = visibilidade_atual;
             strcpy(node->name, tkns[pos].value); pos++;
             if (tkns[pos].type == T_ATRIBUICAO) pos++;
             if (tkns[pos].type == T_ABRE_PAR) pos++;

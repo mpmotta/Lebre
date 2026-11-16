@@ -1,49 +1,49 @@
 incluir "conexao.leb";
 
 classe Pessoa estende Conexao {
-    privado var texto #tabela;
-    privado var texto #nome;
-    privado var texto #fone;
-    privado var texto #email;
+    var privada texto #tabela;
+    var privada texto #nome;
+    var privada texto #fone;
+    var privada texto #email;
     
     funcao construtor() {
         #tabela = "contatos";
     }
 
-    publico funcao getNome() { retorna #nome; }
-    publico funcao setNome(texto #n) { #nome = #n; }
+    funcao publica pegaNome() { retorna #nome; }
+    funcao publica setaNome(texto #n) { #nome = #n; }
     
-    publico funcao getFone() { retorna #fone; }
-    publico funcao setFone(texto #f) { #fone = #f; }
+    funcao publica pegaFone() { retorna #fone; }
+    funcao publica setaFone(texto #f) { #fone = #f; }
     
-    publico funcao getEmail() { retorna #email; }
-    publico funcao setEmail(texto #e) { #email = #e; }
+    funcao publica pegaEmail() { retorna #email; }
+    funcao publica setaEmail(texto #e) { #email = #e; }
     
-    publico funcao consulta() {
+    funcao publica consulta() {
         var texto #sql = "SELECT * FROM {{#tabela}}";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;
     }
     
-    publico funcao consultaID(texto #valorId) {
+    funcao publica consultaID(texto #valorId) {
         var texto #sql = "SELECT * FROM {{#tabela}} WHERE id = {{#valorId}}";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;
     }
     
-    publico funcao inserir() {
+    funcao publica inserir() {
         var texto #sql = "INSERT INTO {{#tabela}} (nome, fone, email) VALUES ('{{#nome}}', '{{#fone}}', '{{#email}}')";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;
     }
     
-    publico funcao editar(texto #valorId) {
+    funcao publica editar(texto #valorId) {
         var texto #sql = "UPDATE {{#tabela}} SET nome = '{{#nome}}', fone = '{{#fone}}', email = '{{#email}}' WHERE id = {{#valorId}}";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;
     }
     
-    publico funcao excluir(texto #valorId) {
+    funcao publica excluir(texto #valorId) {
         var texto #sql = "DELETE FROM {{#tabela}} WHERE id = {{#valorId}}";
         var texto #json = mysqlConsultar(#sql);
         retorna #json;

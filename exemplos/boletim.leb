@@ -24,16 +24,23 @@ var texto #continuar = "s";
 enquanto (#continuar == "s" ou #continuar == "S") {
     mostrar("");
     mostrar("Digite o nome do aluno:");
-    var texto #nome = carregar();
+    var texto #nome;
+    carregar(#nome);
 
     mostrar("Digite a Nota 1 de " + #nome + ":");
-    var decimal #n1 = paraDecimal(carregar());
+    var texto #entradaN1;
+    carregar(#entradaN1);
+    var decimal #n1 = paraDecimal(#entradaN1);
 
     mostrar("Digite a Nota 2 de " + #nome + ":");
-    var decimal #n2 = paraDecimal(carregar());
+    var texto #entradaN2;
+    carregar(#entradaN2);
+    var decimal #n2 = paraDecimal(#entradaN2);
 
     mostrar("Digite a Nota 3 de " + #nome + ":");
-    var decimal #n3 = paraDecimal(carregar());
+    var texto #entradaN3;
+    carregar(#entradaN3);
+    var decimal #n3 = paraDecimal(#entradaN3);
 
     var decimal #med = media(#n1, #n2, #n3);
     var decimal #maior = maximo(#n1, #n2, #n3);
@@ -52,7 +59,7 @@ enquanto (#continuar == "s" ou #continuar == "S") {
     mostrar("------------------------------------------");
 
     mostrar("Deseja continuar? (s/n)");
-    #continuar = carregar();
+    carregar(#continuar);
 }
 
 mostrar("Programa finalizado.");
