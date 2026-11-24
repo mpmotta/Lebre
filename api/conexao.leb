@@ -8,9 +8,9 @@ classe abstrata Conexao {
     funcao construtor() {
         #host = "127.0.0.1";
         #usuario = "root";
-        #senha = "apple";
+        #senha = "";
         #banco = "agenda";
-        #porta = 3306;
+        #porta = 3307;
         
         var booleano #conectado = mysqlConectar(#host, #usuario, #senha, #banco, #porta);
         se (#conectado == falso) {
