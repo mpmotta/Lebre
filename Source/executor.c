@@ -661,4 +661,7 @@ void executa(ASTNode* node, Ambiente* env) {
         else if (v.type == VAL_OBJETO) printf("[Objeto]\n");
         else if (v.type == VAL_CLASSE) printf("[Classe]\n");
     }
+    else if (node->type == AST_VER) {
+        printf("Lebre %s\n", LEBRE_VERSAO);
+    }
 }

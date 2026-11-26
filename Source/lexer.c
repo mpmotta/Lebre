@@ -145,6 +145,7 @@ void lex(const char* src, Token* tokens) {
             else if (strcmp(v, "arred") == 0) tokens[t].type = T_ARRED;
             else if (strcmp(v, "teto") == 0) tokens[t].type = T_TETO;
             else if (strcmp(v, "piso") == 0) tokens[t].type = T_PISO;
+            else if (strcmp(v, "ver") == 0) tokens[t].type = T_VER;
             else if (strcmp(v, "e") == 0) tokens[t].type = T_E;
             else if (strcmp(v, "ou") == 0) tokens[t].type = T_OU;
             else tokens[t].type = T_IDENTIFICADOR;

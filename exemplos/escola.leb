@@ -43,7 +43,7 @@ mostrar("Media Final: " + #mediaFinal);
 mostrar("Status: " + #statusFinal);
 
 mostrar("---");
-linha (var int #i = 3; #i > 0; #i--) {
+linha (var int #i = 3; #i > 0; #i--){
     mostrar("Encerrando o sistema em " + #i + "...");
 }
 mostrar("Sistema encerrado!");

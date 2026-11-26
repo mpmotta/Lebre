@@ -187,6 +187,16 @@ void analisar_no(ASTNode* node) {
         }
         return;
     }
+
+    if (node->type == AST_LINHA) {
+        iniciar_escopo();
+        analisar_no(node->init);
+        analisar_no(node->cond);
+        analisar_no(node->step);
+        analisar_no(node->body);
+        fechar_escopo();
+        return;
+    }
     
     if (node->type == AST_LINHAS) {
         analisar_no(node->right);

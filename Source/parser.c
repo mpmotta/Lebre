@@ -2,6 +2,7 @@
 
 int pos = 0; Token* tkns;
 int escopo_classe = 0;
+int ignorar_ponto_virgula = 0;
 
 ASTNode* create_node(ASTNodeType type) {
     ASTNode* node = malloc(sizeof(ASTNode));
@@ -31,7 +32,7 @@ ASTNode* create_node(ASTNodeType type) {
 void exigir_ponto_virgula() {
     if (tkns[pos].type == T_PONTO_VIRGULA) {
         pos++;
-    } else {
+    } else if (!ignorar_ponto_virgula) {
         char msg[256];
         sprintf(msg, "Faltou ponto e virgula no final da instrucao perto de '%s' (Arquivo: %s, Linha: %d)", tkns[pos].value, tkns[pos].arquivo, tkns[pos].numero_linha);
         lancar_erro(msg);
@@ -349,7 +350,10 @@ ASTNode* parse_statement() {
         node->init = parse_statement();
         node->cond = parse_expression();
         exigir_ponto_virgula();
+        int prev_ignorar = ignorar_ponto_virgula;
+        ignorar_ponto_virgula = 1;
         node->step = parse_statement();
+        ignorar_ponto_virgula = prev_ignorar;
         if (tkns[pos].type == T_FECHA_PAR) pos++;
         node->body = parse_bloco();
         return node;
@@ -585,6 +589,12 @@ ASTNode* parse_statement() {
         if (tkns[pos].type == T_ABRE_PAR) pos++;
         node->right = parse_expression();
         if (tkns[pos].type == T_FECHA_PAR) pos++;
+        exigir_ponto_virgula();
+        return node;
+    }
+
+    if (tkns[pos].type == T_VER) {
+        node = create_node(AST_VER); pos++;
         exigir_ponto_virgula();
         return node;
     }

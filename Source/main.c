@@ -9,6 +9,7 @@
     #include <readline/history.h>
 #endif
 
+const char* LEBRE_VERSAO = "2.5.1";
 Ambiente ambiente_global;
 LebreValue global_return_val;
 int flag_return = 0;
@@ -25,6 +26,11 @@ void lancar_erro(const char* msg) {
 }
 
 int main(int argc, char** argv) {
+    if (argc >= 2 && (strcmp(argv[1], "--ver") == 0 || (argc >= 3 && strcmp(argv[1], "--") == 0 && strcmp(argv[2], "ver") == 0))) {
+        printf("Lebre %s\n", LEBRE_VERSAO);
+        return 0;
+    }
+
     srand((unsigned int)time(NULL));
     ambiente_global.count = 0;
     ambiente_global.pai = NULL;
@@ -33,7 +39,7 @@ int main(int argc, char** argv) {
     registrar_modulo_http(&ambiente_global);
 
     if (argc == 1) {
-        printf("########## Interpretador Lebre v2.5 ##########\n");
+        printf("########## Interpretador Lebre v%s ##########\n", LEBRE_VERSAO);
         printf("Digite 'sair' para encerrar o terminal.\n");
         modo_repl = 1;
         
@@ -68,6 +74,13 @@ int main(int argc, char** argv) {
             if (strcmp(linha_lida, "sair") == 0) {
                 free(linha_lida);
                 break;
+            }
+
+            if (strcmp(linha_lida, "ver") == 0) {
+                printf("Lebre %s\n", LEBRE_VERSAO);
+                free(linha_lida);
+                linha_lida = NULL;
+                continue;
             }
 
             if (strlen(linha_lida) == 0) {
