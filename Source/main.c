@@ -1,5 +1,6 @@
 #include "lebre.h"
 #include <setjmp.h>
+#include <ctype.h>
 
 #if defined(_WIN32) || defined(_WIN64)
     #define MODO_WINDOWS 1
@@ -16,6 +17,64 @@ int flag_return = 0;
 jmp_buf env_erro;
 int modo_repl = 0;
 
+int comparar_sem_caso(const char* a, const char* b) {
+    while (*a && *b) {
+        if (tolower((unsigned char)*a) != tolower((unsigned char)*b)) {
+            return 0;
+        }
+        a++;
+        b++;
+    }
+    return *a == '\0' && *b == '\0';
+}
+
+int verificar_comando_cli(int argc, char** argv, const char* cmd) {
+    if (argc >= 2 && strncmp(argv[1], "--", 2) == 0 && comparar_sem_caso(argv[1] + 2, cmd)) {
+        return 1;
+    }
+    if (argc >= 3 && strcmp(argv[1], "--") == 0 && comparar_sem_caso(argv[2], cmd)) {
+        return 1;
+    }
+    return 0;
+}
+
+void mostrar_author(void) {
+    puts("Author: Marcio Paiva da Motta - UniRitter - Nov/2026");
+}
+
+void mostrar_acronimo(void) {
+    puts("L.E.B.R.E. = Linguagem Encapsulada Basica Rapida e Eficiente");
+}
+
+void mostrar_ascii(void) {
+    puts("                      ..----------------..");
+    puts("                   .-@@@@@@@@@@@@@@@@@@@@@@-.");
+    puts("                  @@@@@@@@@@@@@@@@@@@@@@@@@@@@.");
+    puts("                  @@@@@@@@@@@---........'@@@@@@.");
+    puts("                  '-------'              '@@@@@@@---..");
+    puts("                                         .@@@@@@@@@@@@@@.");
+    puts("               ..---@@@@@@@@@---..      .@@@@@@@@@@   @@@.");
+    puts("           .-@@@@@@@@@@@@@@@@@@@@@-.   .@@@@@@@@@@@   @@@@.");
+    puts("        .-@@@@@@@@@@@@@@@@@@@@@@@@@@@-.@@@@@@@@@@@@@@@@@@@@.");
+    puts("       .@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+    puts("      .@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'");
+    puts("     .@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@---''");
+    puts("     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'");
+    puts("     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@");
+    puts("     @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'");
+    puts("  .-. @@@@@@@@@@@@@@@@@@@---..@@@@@@@@@@@@@@@@@@'");
+    puts(" .@@@.@@@@@@@@@@@@@@@@@@@@@'  .@@@@@@@@@@@@@@@@'");
+    puts(" @@@@@.@@@@@@@@@@@@@@@@@@@@@@ .@@@@@@@@@@@@@@@'");
+    puts(" '@@@@@.@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@---'''     ..--.");
+    puts("  '@@@@@..@@@@@@@@@@@@@@@@@@@@@@@@@'           .@@@@@@.");
+    puts("    '---' '@@@@@@@@@@@@@@@@@@@@@@@@---......--@@@@@@@@'");
+    puts("              '---@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@'");
+    puts("                .@@@@@@@@@@@@'  '---@@@@@@@@@@@@--'");
+    puts("              .@@@@@@@@@@@@'          ''------''");
+    puts("             .@@@@@@@@@@@'");
+    puts("              '--------'");
+}
+
 void lancar_erro(const char* msg) {
     printf("Erro: %s\n", msg);
     if (modo_repl) {
@@ -29,6 +88,30 @@ int main(int argc, char** argv) {
     if (argc >= 2 && (strcmp(argv[1], "--ver") == 0 || (argc >= 3 && strcmp(argv[1], "--") == 0 && strcmp(argv[2], "ver") == 0))) {
         printf("Lebre %s\n", LEBRE_VERSAO);
         return 0;
+    }
+
+    if (verificar_comando_cli(argc, argv, "author")) {
+        mostrar_author();
+        return 0;
+    }
+
+    if (verificar_comando_cli(argc, argv, "ascii")) {
+        mostrar_ascii();
+        return 0;
+    }
+
+    if (verificar_comando_cli(argc, argv, "L.E.B.R.E.")) {
+        mostrar_acronimo();
+        return 0;
+    }
+
+    if (argc >= 2 && argv[1][0] == '-') {
+        if (strcmp(argv[1], "--") == 0 && argc >= 3) {
+            printf("parametro -- %s invalido.\n", argv[2]);
+        } else {
+            printf("parametro %s invalido.\n", argv[1]);
+        }
+        return 1;
     }
 
     srand((unsigned int)time(NULL));
@@ -78,6 +161,27 @@ int main(int argc, char** argv) {
 
             if (strcmp(linha_lida, "ver") == 0) {
                 printf("Lebre %s\n", LEBRE_VERSAO);
+                free(linha_lida);
+                linha_lida = NULL;
+                continue;
+            }
+
+            if (comparar_sem_caso(linha_lida, "author")) {
+                mostrar_author();
+                free(linha_lida);
+                linha_lida = NULL;
+                continue;
+            }
+
+            if (comparar_sem_caso(linha_lida, "ascii")) {
+                mostrar_ascii();
+                free(linha_lida);
+                linha_lida = NULL;
+                continue;
+            }
+
+            if (comparar_sem_caso(linha_lida, "L.E.B.R.E.")) {
+                mostrar_acronimo();
                 free(linha_lida);
                 linha_lida = NULL;
                 continue;
